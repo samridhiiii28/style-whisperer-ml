@@ -66,7 +66,7 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
           transition={{ duration: 0.8, delay: 0.6 }}
           className="mt-16 flex flex-wrap justify-center gap-3"
         >
-          {["Color Compatibility", "Occasion Prediction", "Style Analysis", "NLP-Powered"].map((tag) => (
+          {["Color Compatibility", "Occasion Prediction", "Style Analysis", "Smart Matching"].map((tag) => (
             <span
               key={tag}
               className="px-4 py-2 border border-gold rounded-full text-xs tracking-wider uppercase text-muted-foreground font-body"
