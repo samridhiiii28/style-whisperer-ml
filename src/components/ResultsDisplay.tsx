@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Palette, Calendar, Shirt, Footprints, Watch, Lightbulb, Check, Loader2, ImageIcon, RefreshCw } from "lucide-react";
+import { Palette, Calendar, Shirt, Footprints, Watch, Lightbulb, Check, Loader2, ImageIcon } from "lucide-react";
 import MLInsightsPanel from "./MLInsightsPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 let imageRequestQueue = Promise.resolve();
 let lastImageRequestAt = 0;
-const IMAGE_REQUEST_GAP_MS = 1600;
+const IMAGE_REQUEST_GAP_MS = 2600;
+const itemImageCache = new Map<string, string>();
 
 const enqueueImageRequest = <T,>(task: () => Promise<T>): Promise<T> => {
   const run = async () => {
@@ -27,6 +28,25 @@ const enqueueImageRequest = <T,>(task: () => Promise<T>): Promise<T> => {
   imageRequestQueue = queuedTask.then(() => undefined, () => undefined);
   return queuedTask;
 };
+
+const createFallbackItemImage = (itemName: string, itemColor: string) => {
+  const label = `${itemColor} ${itemName}`.trim();
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480' viewBox='0 0 640 480'>
+  <defs>
+    <linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'>
+      <stop offset='0%' stop-color='#f6f2ea'/>
+      <stop offset='100%' stop-color='#e8dfd0'/>
+    </linearGradient>
+  </defs>
+  <rect width='640' height='480' fill='url(#bg)'/>
+  <rect x='56' y='56' width='528' height='368' rx='24' fill='#ffffff' stroke='#d7c5a2' stroke-width='2'/>
+  <text x='320' y='220' text-anchor='middle' font-family='system-ui, -apple-system, Segoe UI, Roboto, sans-serif' font-size='28' fill='#5f4a28'>${label}</text>
+  <text x='320' y='260' text-anchor='middle' font-family='system-ui, -apple-system, Segoe UI, Roboto, sans-serif' font-size='16' fill='#7a6a4c'>Preview available while image service is busy</text>
+</svg>`;
+
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+};
+
 export interface AIAnalysisResult {
   detectedItem: string;
   detectedColors: { name: string; hex: string }[];
@@ -89,17 +109,11 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
   const [failed, setFailed] = useState(false);
   const requestIdRef = useRef(0);
 
-  const invokeItemImage = useCallback(async (maxAttempts = 3): Promise<string> => {
-    const promptVariants = [
-      `${itemColor} ${itemName}`,
-      `${itemName} in ${itemColor}`,
-      itemName,
-    ];
-
+  const invokeItemImage = useCallback(async (maxAttempts = 1): Promise<string> => {
+    const prompt = `${itemColor} ${itemName}`.trim();
     let lastError = "Failed to generate item image";
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const prompt = promptVariants[Math.min(attempt - 1, promptVariants.length - 1)];
       const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
         body: { prompt, type: "item" },
       });
@@ -113,13 +127,12 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
       const isRateLimit = status === 429 || /429|rate limit/i.test(lastError);
       const isCredits = status === 402 || /402|credits exhausted|payment required/i.test(lastError);
 
-      if (isCredits) {
+      if (isRateLimit || isCredits) {
         throw new Error(lastError);
       }
 
       if (attempt < maxAttempts) {
-        const waitMs = isRateLimit ? 1400 * attempt : 600;
-        await new Promise((resolve) => setTimeout(resolve, waitMs));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
 
@@ -127,6 +140,15 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
   }, [itemColor, itemName]);
 
   const generateImage = useCallback(async () => {
+    const cacheKey = `${itemColor.toLowerCase()}::${itemName.toLowerCase()}`;
+    const cachedUrl = itemImageCache.get(cacheKey);
+    if (cachedUrl) {
+      setImageUrl(cachedUrl);
+      setFailed(false);
+      setLoading(false);
+      return;
+    }
+
     const requestId = ++requestIdRef.current;
     setLoading(true);
     setFailed(false);
@@ -134,11 +156,14 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
     try {
       const nextImageUrl = await enqueueImageRequest(() => invokeItemImage());
       if (requestIdRef.current !== requestId) return;
+      itemImageCache.set(cacheKey, nextImageUrl);
       setImageUrl(nextImageUrl);
     } catch (error) {
       if (requestIdRef.current !== requestId) return;
+      const fallbackImage = createFallbackItemImage(itemName, itemColor);
+      itemImageCache.set(cacheKey, fallbackImage);
       setFailed(true);
-      setImageUrl("/placeholder.svg");
+      setImageUrl(fallbackImage);
       const message = error instanceof Error ? error.message : "Failed to generate item image";
       if (/credits exhausted|payment required/i.test(message)) {
         toast.error(message);
@@ -148,7 +173,7 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
         setLoading(false);
       }
     }
-  }, [invokeItemImage]);
+  }, [invokeItemImage, itemColor, itemName]);
 
   useEffect(() => {
     setImageUrl(null);
@@ -289,15 +314,11 @@ const FullOutfitImage = ({
   sourceGarmentImage,
   sourceGarmentColorName,
   sourceGarmentColorHex,
-  onRefreshLook,
-  refreshKey,
 }: {
   outfitDescription: string;
   sourceGarmentImage: string;
   sourceGarmentColorName?: string;
   sourceGarmentColorHex?: string;
-  onRefreshLook: () => void;
-  refreshKey: number;
 }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -310,8 +331,7 @@ const FullOutfitImage = ({
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
         body: {
-          // Variation tags help force a fresh generation per refresh/attempt
-          prompt: `${outfitDescription} | variation ${refreshKey + 1} option ${attempt}`,
+          prompt: outfitDescription,
           type: "full_outfit",
           sourceImageBase64: sourceGarmentImage,
           sourceGarmentColorName,
@@ -367,7 +387,7 @@ const FullOutfitImage = ({
     return () => {
       requestIdRef.current += 1;
     };
-  }, [outfitDescription, sourceGarmentImage, refreshKey]);
+  }, [outfitDescription, sourceGarmentImage]);
 
   return (
     <motion.div 
@@ -375,7 +395,7 @@ const FullOutfitImage = ({
       animate={{ opacity: 1, y: 0 }}
       className="card-elevated rounded-xl p-6 mb-6"
     >
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center mb-5">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
             <ImageIcon size={16} className="text-primary" />
@@ -385,15 +405,6 @@ const FullOutfitImage = ({
             <p className="text-[11px] text-muted-foreground font-body">AI-generated outfit preview</p>
           </div>
         </div>
-        <button
-          onClick={onRefreshLook}
-          disabled={loading}
-          aria-label="Try another recommendation look"
-          title="Try another recommendation look"
-          className="w-10 h-10 rounded-xl border border-gold/15 bg-secondary/50 text-primary flex items-center justify-center hover:bg-primary/10 hover:border-gold/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-        </button>
       </div>
 
       {imageUrl ? (
@@ -432,13 +443,9 @@ const FullOutfitImage = ({
 
 const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsDisplayProps) => {
   const [outfitVariant, setOutfitVariant] = useState({ bottom: 0, footwear: 0, accessories: 0 });
-  const [styledLookRefreshKey, setStyledLookRefreshKey] = useState(0);
-  const lastRefreshAtRef = useRef(0);
 
   useEffect(() => {
     setOutfitVariant({ bottom: 0, footwear: 0, accessories: 0 });
-    setStyledLookRefreshKey(0);
-    lastRefreshAtRef.current = 0;
   }, [result]);
 
   const pickSuggestion = (
@@ -472,28 +479,6 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
   useEffect(() => {
     onOutfitDescription(fullOutfitDesc);
   }, [fullOutfitDesc, onOutfitDescription]);
-
-  const cycleOutfitVariant = () => {
-    const now = Date.now();
-    if (now - lastRefreshAtRef.current < 3500) {
-      toast.error("Please wait 3-4 seconds before refreshing again.");
-      return;
-    }
-    lastRefreshAtRef.current = now;
-
-    const bottomLen = result.suggestions.bottomWear?.length ?? 0;
-    const footwearLen = result.suggestions.footwear?.length ?? 0;
-    const accessoryLen = result.suggestions.accessories?.length ?? 0;
-
-    // Rotate all categories simultaneously to ensure visible change
-    setOutfitVariant((prev) => ({
-      bottom: bottomLen > 1 ? (prev.bottom + 1) % bottomLen : prev.bottom,
-      footwear: footwearLen > 1 ? (prev.footwear + 1) % footwearLen : prev.footwear,
-      accessories: accessoryLen > 1 ? (prev.accessories + 1) % accessoryLen : prev.accessories,
-    }));
-
-    setStyledLookRefreshKey((prev) => prev + 1);
-  };
 
   return (
     <section className="relative py-32 px-6">
@@ -606,8 +591,6 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
             sourceGarmentImage={uploadedImage}
             sourceGarmentColorName={primaryGarmentColorName}
             sourceGarmentColorHex={primaryGarmentColorHex}
-            onRefreshLook={cycleOutfitVariant}
-            refreshKey={styledLookRefreshKey}
           />
 
           {/* Suggestions */}
