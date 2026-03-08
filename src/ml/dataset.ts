@@ -185,6 +185,15 @@ export const CLOTHING_DATASET: ClothingItemEntry[] = [
   { keyword: "suit jacket", category: "outerwear", formality: 5, styleTraits: ["formal","classic","elegant"], seasons: ["spring","autumn","winter"] },
 ];
 
+// Merge expanded dataset (1000+ items) with originals, deduplicating by keyword
+const seenKeywords = new Set(CLOTHING_DATASET.map(i => i.keyword));
+for (const item of EXPANDED_CLOTHING_DATASET) {
+  if (!seenKeywords.has(item.keyword)) {
+    CLOTHING_DATASET.push(item);
+    seenKeywords.add(item.keyword);
+  }
+}
+
 // ─── OCCASION TRAINING DATA ─────────────────────────────────────────────────
 // Decision tree training samples: formality + style traits → occasion label
 
