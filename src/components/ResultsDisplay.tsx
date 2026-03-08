@@ -65,8 +65,9 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
+  const requestIdRef = useRef(0);
 
-  const invokeItemImage = async (maxAttempts = 1): Promise<string> => {
+  const invokeItemImage = async (maxAttempts = 2): Promise<string> => {
     const promptVariants = [
       `${itemColor} ${itemName}`,
       `${itemName} in ${itemColor}`,
@@ -99,22 +100,33 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
   };
 
   const generateImage = async () => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     setFailed(false);
 
     try {
       const nextImageUrl = await invokeItemImage();
+      if (requestIdRef.current !== requestId) return;
       setImageUrl(nextImageUrl);
     } catch (error) {
+      if (requestIdRef.current !== requestId) return;
       setFailed(true);
       const message = error instanceof Error ? error.message : "Failed to generate item image";
       if (/429|rate limit|credits exhausted|payment required/i.test(message)) {
         toast.error(message);
       }
     } finally {
-      setLoading(false);
+      if (requestIdRef.current === requestId) {
+        setLoading(false);
+      }
     }
   };
+
+  useEffect(() => {
+    setImageUrl(null);
+    void generateImage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemName, itemColor]);
 
   return (
     <div className="w-full h-48 rounded-lg border border-gold/10 bg-secondary/30 flex items-center justify-center overflow-hidden">
