@@ -20,11 +20,11 @@
  */
 
 import {
-  SUGGESTION_RULES,
   COLOR_DATASET,
   COLOR_HARMONY_RULES,
   type SuggestionRule,
 } from "./dataset";
+import { EXPANDED_SUGGESTION_RULES } from "./suggestionRules";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
