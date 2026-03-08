@@ -63,11 +63,10 @@ const ScoreRing = ({ score, label }: { score: number; label: string }) => {
 
 const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: string }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
-  const requestIdRef = useRef(0);
 
-  const invokeItemImage = async (maxAttempts = 3): Promise<string> => {
+  const invokeItemImage = async (maxAttempts = 1): Promise<string> => {
     const promptVariants = [
       `${itemColor} ${itemName}`,
       `${itemName} in ${itemColor}`,
@@ -94,45 +93,28 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
       if (isRateLimit || isCredits) {
         throw new Error(lastError);
       }
-
-      if (attempt < maxAttempts) {
-        await new Promise((resolve) => setTimeout(resolve, 700 * attempt));
-      }
     }
 
     throw new Error(lastError);
   };
 
   const generateImage = async () => {
-    const requestId = ++requestIdRef.current;
     setLoading(true);
     setFailed(false);
-    setImageUrl(null);
 
     try {
       const nextImageUrl = await invokeItemImage();
-      if (requestId !== requestIdRef.current) return;
       setImageUrl(nextImageUrl);
     } catch (error) {
-      if (requestId !== requestIdRef.current) return;
       setFailed(true);
       const message = error instanceof Error ? error.message : "Failed to generate item image";
       if (/429|rate limit|credits exhausted|payment required/i.test(message)) {
         toast.error(message);
       }
     } finally {
-      if (requestId === requestIdRef.current) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
-
-  useEffect(() => {
-    generateImage();
-    return () => {
-      requestIdRef.current += 1;
-    };
-  }, [itemName, itemColor]);
 
   return (
     <div className="w-full h-48 rounded-lg border border-gold/10 bg-secondary/30 flex items-center justify-center overflow-hidden">
@@ -143,15 +125,15 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
           <Loader2 size={20} className="text-primary animate-spin" />
           <span className="text-xs text-muted-foreground font-body">Generating...</span>
         </div>
-      ) : failed ? (
+      ) : (
         <button
           onClick={generateImage}
           className="flex flex-col items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
         >
           <ImageIcon size={24} />
-          <span className="text-xs font-body">Retry</span>
+          <span className="text-xs font-body">{failed ? "Retry" : "Generate image"}</span>
         </button>
-      ) : null}
+      )}
     </div>
   );
 };
@@ -257,7 +239,7 @@ const FullOutfitImage = ({
   const [failed, setFailed] = useState(false);
   const requestIdRef = useRef(0);
 
-  const invokeOutfitImage = async (maxAttempts = 3): Promise<string> => {
+  const invokeOutfitImage = async (maxAttempts = 2): Promise<string> => {
     let lastError = "Failed to generate outfit image";
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -286,7 +268,7 @@ const FullOutfitImage = ({
       }
 
       if (attempt < maxAttempts) {
-        await new Promise((resolve) => setTimeout(resolve, 1200 * attempt));
+        await new Promise((resolve) => setTimeout(resolve, 2200));
       }
     }
 
@@ -297,7 +279,6 @@ const FullOutfitImage = ({
     const requestId = ++requestIdRef.current;
     setLoading(true);
     setFailed(false);
-    setImageUrl(null);
 
     try {
       const nextImageUrl = await invokeOutfitImage();
@@ -385,10 +366,12 @@ const FullOutfitImage = ({
 const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsDisplayProps) => {
   const [outfitVariant, setOutfitVariant] = useState({ bottom: 0, footwear: 0, accessories: 0 });
   const [styledLookRefreshKey, setStyledLookRefreshKey] = useState(0);
+  const lastRefreshAtRef = useRef(0);
 
   useEffect(() => {
     setOutfitVariant({ bottom: 0, footwear: 0, accessories: 0 });
     setStyledLookRefreshKey(0);
+    lastRefreshAtRef.current = 0;
   }, [result]);
 
   const pickSuggestion = (
@@ -416,6 +399,13 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
   }, [fullOutfitDesc, onOutfitDescription]);
 
   const cycleOutfitVariant = () => {
+    const now = Date.now();
+    if (now - lastRefreshAtRef.current < 3500) {
+      toast.error("Please wait 3-4 seconds before refreshing again.");
+      return;
+    }
+    lastRefreshAtRef.current = now;
+
     const bottomLen = result.suggestions.bottomWear?.length ?? 0;
     const footwearLen = result.suggestions.footwear?.length ?? 0;
     const accessoryLen = result.suggestions.accessories?.length ?? 0;
