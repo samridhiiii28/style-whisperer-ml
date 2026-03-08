@@ -298,9 +298,11 @@ const FullOutfitImage = ({
 
 const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsDisplayProps) => {
   const [outfitVariant, setOutfitVariant] = useState({ bottom: 0, footwear: 0, accessories: 0 });
+  const [styledLookRefreshKey, setStyledLookRefreshKey] = useState(0);
 
   useEffect(() => {
     setOutfitVariant({ bottom: 0, footwear: 0, accessories: 0 });
+    setStyledLookRefreshKey(0);
   }, [result]);
 
   const pickSuggestion = (
@@ -337,6 +339,7 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
       footwear: footwearCount > 0 ? (prev.footwear + 1) % footwearCount : 0,
       accessories: accessoriesCount > 0 ? (prev.accessories + 1) % accessoriesCount : 0,
     }));
+    setStyledLookRefreshKey((prev) => prev + 1);
   };
 
   return (
