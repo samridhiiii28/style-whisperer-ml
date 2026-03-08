@@ -67,7 +67,7 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
   const [failed, setFailed] = useState(false);
   const requestIdRef = useRef(0);
 
-  const invokeItemImage = async (maxAttempts = 2): Promise<string> => {
+  const invokeItemImage = useCallback(async (maxAttempts = 2): Promise<string> => {
     const promptVariants = [
       `${itemColor} ${itemName}`,
       `${itemName} in ${itemColor}`,
@@ -97,9 +97,9 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
     }
 
     throw new Error(lastError);
-  };
+  }, [itemColor, itemName]);
 
-  const generateImage = async () => {
+  const generateImage = useCallback(async () => {
     const requestId = ++requestIdRef.current;
     setLoading(true);
     setFailed(false);
@@ -120,7 +120,7 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
         setLoading(false);
       }
     }
-  };
+  }, [invokeItemImage]);
 
   useEffect(() => {
     setImageUrl(null);
