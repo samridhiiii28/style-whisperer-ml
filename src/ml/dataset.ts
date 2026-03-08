@@ -6,7 +6,11 @@
  * Curated training datasets for client-side ML models.
  * All data is hand-labeled and used by the Decision Tree, Random Forest,
  * and Recommendation Engine models.
+ * 
+ * Includes 1000+ clothing items via expanded dataset.
  */
+
+import { EXPANDED_CLOTHING_DATASET } from "./expandedClothingDataset";
 
 // ─── COLOR DATASET ──────────────────────────────────────────────────────────
 // 140+ named colors with RGB, HSL, hex, family, warmth, and common pairings
@@ -180,6 +184,15 @@ export const CLOTHING_DATASET: ClothingItemEntry[] = [
   { keyword: "parka", category: "outerwear", formality: 1, styleTraits: ["casual","sporty"], seasons: ["winter"] },
   { keyword: "suit jacket", category: "outerwear", formality: 5, styleTraits: ["formal","classic","elegant"], seasons: ["spring","autumn","winter"] },
 ];
+
+// Merge expanded dataset (1000+ items) with originals, deduplicating by keyword
+const seenKeywords = new Set(CLOTHING_DATASET.map(i => i.keyword));
+for (const item of EXPANDED_CLOTHING_DATASET) {
+  if (!seenKeywords.has(item.keyword)) {
+    CLOTHING_DATASET.push(item);
+    seenKeywords.add(item.keyword);
+  }
+}
 
 // ─── OCCASION TRAINING DATA ─────────────────────────────────────────────────
 // Decision tree training samples: formality + style traits → occasion label
