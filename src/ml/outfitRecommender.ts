@@ -296,9 +296,9 @@ export function generateRecommendations(
   }
 
   const occasionOverrides = getOccasionSuggestionOverrides(occasion, fullBody);
-  bottomWear = mergeSuggestions(bottomWear, occasionOverrides.bottomWear);
-  footwear = mergeSuggestions(footwear, occasionOverrides.footwear);
-  accessories = mergeSuggestions(accessories, occasionOverrides.accessories);
+  bottomWear = shuffle(mergeSuggestions(bottomWear, occasionOverrides.bottomWear)).slice(0, 7);
+  footwear = shuffle(mergeSuggestions(footwear, occasionOverrides.footwear)).slice(0, 7);
+  accessories = shuffle(mergeSuggestions(accessories, occasionOverrides.accessories)).slice(0, 7);
 
   // Calculate color compatibility
   const suggestedColorNames = [
