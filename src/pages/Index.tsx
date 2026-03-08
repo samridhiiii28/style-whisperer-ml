@@ -1,7 +1,9 @@
 import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Sparkles, LogIn, LogOut, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import HeroSection from "@/components/HeroSection";
 import OutfitForm from "@/components/OutfitForm";
 import HowItWorks from "@/components/HowItWorks";
@@ -16,6 +18,8 @@ const Index = () => {
   const [outfitDescription, setOutfitDescription] = useState("");
   const formRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { user, profile, signOut, loading: authLoading } = useAuth();
 
   const scrollToForm = () => {
     formRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -59,7 +63,7 @@ const Index = () => {
             <span className="text-foreground/80">-Match</span>
           </motion.span>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <button
               onClick={scrollToForm}
               className="text-xs tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground font-body transition-colors duration-300"
@@ -73,6 +77,37 @@ const Index = () => {
               <Sparkles size={12} />
               Analyze
             </button>
+
+            {/* Auth buttons */}
+            {authLoading ? null : user ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/60 border border-border">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover" />
+                  ) : (
+                    <User size={14} className="text-primary" />
+                  )}
+                  <span className="text-xs font-body text-foreground/80 hidden sm:inline max-w-[100px] truncate">
+                    {profile?.display_name || user.email?.split("@")[0]}
+                  </span>
+                </div>
+                <button
+                  onClick={signOut}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-gold/20 transition-all duration-300 text-xs font-body"
+                >
+                  <LogOut size={12} />
+                  <span className="hidden sm:inline">Sign Out</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate("/auth")}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg btn-primary-premium text-primary-foreground text-xs font-body font-semibold tracking-wider uppercase"
+              >
+                <LogIn size={12} />
+                Sign In
+              </button>
+            )}
           </div>
         </div>
       </nav>
