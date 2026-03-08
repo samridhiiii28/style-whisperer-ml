@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Palette, Calendar, Shirt, Footprints, Watch, Lightbulb, Check, Loader2, ImageIcon, RefreshCw } from "lucide-react";
+import { Palette, Calendar, Shirt, Footprints, Watch, Lightbulb, Check, Loader2, ImageIcon } from "lucide-react";
 import MLInsightsPanel from "./MLInsightsPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 let imageRequestQueue = Promise.resolve();
 let lastImageRequestAt = 0;
-const IMAGE_REQUEST_GAP_MS = 1600;
+const IMAGE_REQUEST_GAP_MS = 2600;
+const itemImageCache = new Map<string, string>();
 
 const enqueueImageRequest = <T,>(task: () => Promise<T>): Promise<T> => {
   const run = async () => {
