@@ -372,8 +372,28 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
   }, [fullOutfitDesc, onOutfitDescription]);
 
   const cycleOutfitVariant = () => {
-    // Refresh only the Styled Look image to avoid burst-calling item image generation
-    // (which was causing 429 rate-limit errors after repeated refreshes)
+    const bottomLen = result.suggestions.bottomWear?.length ?? 0;
+    const footwearLen = result.suggestions.footwear?.length ?? 0;
+    const accessoryLen = result.suggestions.accessories?.length ?? 0;
+
+    const rotatable: Array<"bottom" | "footwear" | "accessories"> = [];
+    if (bottomLen > 1) rotatable.push("bottom");
+    if (footwearLen > 1) rotatable.push("footwear");
+    if (accessoryLen > 1) rotatable.push("accessories");
+
+    if (rotatable.length > 0) {
+      const target = rotatable[styledLookRefreshKey % rotatable.length];
+      setOutfitVariant((prev) => {
+        if (target === "bottom") {
+          return { ...prev, bottom: (prev.bottom + 1) % bottomLen };
+        }
+        if (target === "footwear") {
+          return { ...prev, footwear: (prev.footwear + 1) % footwearLen };
+        }
+        return { ...prev, accessories: (prev.accessories + 1) % accessoryLen };
+      });
+    }
+
     setStyledLookRefreshKey((prev) => prev + 1);
   };
 
