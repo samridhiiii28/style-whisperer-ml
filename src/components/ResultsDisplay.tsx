@@ -191,6 +191,12 @@ const SuggestionCard = ({
   );
 };
 
+const getFunctionErrorStatus = (error: unknown): number | undefined => {
+  if (!error || typeof error !== "object") return undefined;
+  const maybeError = error as { context?: { status?: number } };
+  return typeof maybeError.context?.status === "number" ? maybeError.context.status : undefined;
+};
+
 const FullOutfitImage = ({
   outfitDescription,
   sourceGarmentImage,
@@ -207,7 +213,7 @@ const FullOutfitImage = ({
   const [failed, setFailed] = useState(false);
   const requestIdRef = useRef(0);
 
-  const invokeOutfitImage = async (maxAttempts = 3): Promise<string> => {
+  const invokeOutfitImage = async (maxAttempts = 2): Promise<string> => {
     let lastError = "Failed to generate outfit image";
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -224,17 +230,19 @@ const FullOutfitImage = ({
         return data.imageUrl;
       }
 
+      const status = getFunctionErrorStatus(error);
       lastError = data?.error || error?.message || lastError;
-      const isRateLimit = /429|rate limit/i.test(lastError);
-      const isCredits = /402|credits exhausted|payment required/i.test(lastError);
 
-      // Do not hammer the gateway on rate-limit/credits responses
+      const isRateLimit = status === 429 || /429|rate limit/i.test(lastError);
+      const isCredits = status === 402 || /402|credits exhausted|payment required/i.test(lastError);
+
+      // Stop immediately on gateway limits to avoid repeated 429 bursts
       if (isRateLimit || isCredits) {
         throw new Error(lastError);
       }
 
       if (attempt < maxAttempts) {
-        await new Promise((resolve) => setTimeout(resolve, 700 * attempt));
+        await new Promise((resolve) => setTimeout(resolve, 1200 * attempt));
       }
     }
 
