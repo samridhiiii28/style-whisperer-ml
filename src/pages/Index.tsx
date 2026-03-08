@@ -18,6 +18,8 @@ const Index = () => {
   const [outfitDescription, setOutfitDescription] = useState("");
   const formRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { user, profile, signOut, loading: authLoading } = useAuth();
 
   const scrollToForm = () => {
     formRef.current?.scrollIntoView({ behavior: "smooth" });
