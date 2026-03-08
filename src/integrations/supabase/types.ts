@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      analysis_history: {
+        Row: {
+          color_compatibility: Json
+          created_at: string
+          description: string | null
+          detected_colors: Json
+          detected_item: string
+          id: string
+          occasion: Json
+          overall_score: number | null
+          style_analysis: string | null
+          suggestions: Json
+          uploaded_image: string | null
+          user_id: string
+        }
+        Insert: {
+          color_compatibility?: Json
+          created_at?: string
+          description?: string | null
+          detected_colors?: Json
+          detected_item: string
+          id?: string
+          occasion?: Json
+          overall_score?: number | null
+          style_analysis?: string | null
+          suggestions?: Json
+          uploaded_image?: string | null
+          user_id: string
+        }
+        Update: {
+          color_compatibility?: Json
+          created_at?: string
+          description?: string | null
+          detected_colors?: Json
+          detected_item?: string
+          id?: string
+          occasion?: Json
+          overall_score?: number | null
+          style_analysis?: string | null
+          suggestions?: Json
+          uploaded_image?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
