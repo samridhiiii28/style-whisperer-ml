@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { TreePine, Brain, TrendingUp, Heart, RotateCcw } from "lucide-react";
-import { evaluateOutfitCompatibility, type OutfitItem, type CompatibilityResult } from "@/lib/randomForestModel";
-import { recordInteraction, getPredictions, resetPreferences, scoreItemForUser, type PreferencePrediction } from "@/lib/preferenceLearningModel";
+import { evaluateOutfitCompatibility, type OutfitItem, type CompatibilityResult } from "@/ml/randomForestModel";
+import { recordInteraction, getPredictions, resetPreferences, scoreItemForUser, type PreferencePrediction } from "@/ml/preferenceLearningModel";
 import type { AIAnalysisResult } from "./ResultsDisplay";
 
 interface MLInsightsPanelProps {

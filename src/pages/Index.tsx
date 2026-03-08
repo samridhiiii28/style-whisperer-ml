@@ -5,7 +5,11 @@ import OutfitForm from "@/components/OutfitForm";
 import HowItWorks from "@/components/HowItWorks";
 import ResultsDisplay, { type AIAnalysisResult } from "@/components/ResultsDisplay";
 import VirtualTryOn from "@/components/VirtualTryOn";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  extractDominantColors,
+  classifyOccasion,
+  generateRecommendations,
+} from "@/ml";
 
 const Index = () => {
   const [result, setResult] = useState<AIAnalysisResult | null>(null);
@@ -26,30 +30,60 @@ const Index = () => {
     setOutfitDescription("");
 
     try {
-      const { data, error } = await supabase.functions.invoke("analyze-outfit", {
-        body: { imageBase64, description },
-      });
+      // ──────────────────────────────────────────────────────────
+      // STEP 1: Color Detection (K-Means Clustering — client-side ML)
+      // ──────────────────────────────────────────────────────────
+      const detectedColors = await extractDominantColors(imageBase64, 4);
+      const colors = detectedColors.map(c => ({ name: c.name, hex: c.hex }));
 
-      if (error) {
-        console.error("Edge function error:", error);
-        toast.error("Analysis failed. Please try again.");
-        setIsLoading(false);
-        return;
-      }
+      // Build detected item name from dominant color + generic label
+      const primaryColor = colors[0]?.name || "Unknown";
+      const detectedItem = description
+        ? `${primaryColor} clothing item`
+        : `${primaryColor} clothing item`;
 
-      if (data?.error) {
-        toast.error(data.error);
-        setIsLoading(false);
-        return;
-      }
+      // ──────────────────────────────────────────────────────────
+      // STEP 2: Occasion Classification (Decision Tree — client-side ML)
+      // ──────────────────────────────────────────────────────────
+      const occasion = classifyOccasion(detectedItem, colors, description);
 
-      setResult(data as AIAnalysisResult);
+      // ──────────────────────────────────────────────────────────
+      // STEP 3: Outfit Recommendation (Rule Engine — client-side ML)
+      // ──────────────────────────────────────────────────────────
+      const recommendations = generateRecommendations(
+        detectedItem,
+        colors,
+        occasion.primary
+      );
+
+      // ──────────────────────────────────────────────────────────
+      // STEP 4: Assemble results (API used ONLY for image generation later)
+      // ──────────────────────────────────────────────────────────
+      const analysisResult: AIAnalysisResult = {
+        detectedItem,
+        detectedColors: colors,
+        occasion: {
+          primary: occasion.primary,
+          alternatives: occasion.alternatives,
+          reasoning: occasion.reasoning,
+        },
+        suggestions: {
+          bottomWear: recommendations.bottomWear,
+          footwear: recommendations.footwear,
+          accessories: recommendations.accessories,
+        },
+        colorCompatibility: recommendations.colorCompatibility,
+        styleAnalysis: recommendations.styleAnalysis,
+        overallScore: recommendations.colorCompatibility.score,
+      };
+
+      setResult(analysisResult);
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
     } catch (err) {
-      console.error("Analysis error:", err);
-      toast.error("Something went wrong. Please try again.");
+      console.error("ML Analysis error:", err);
+      toast.error("Analysis failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +140,7 @@ const Index = () => {
             <span className="text-gradient-gold">Fashn</span>-Match
           </p>
           <p className="text-xs text-muted-foreground font-body tracking-wider">
-            Fashion Intelligence · Color Detection · Occasion Prediction · Virtual Try-On
+            ML-Powered Fashion Intelligence · K-Means Color Detection · Decision Tree Classification · Random Forest Compatibility
           </p>
         </div>
       </footer>
