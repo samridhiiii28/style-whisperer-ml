@@ -250,14 +250,18 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     matchKeywords: ["t-shirt", "tee", "tshirt"],
     matchColors: ["neutral", "blue", "red", "green"],
     bottomWear: [
-      { item: "Slim Fit Jeans", colors: ["Blue Denim", "Black", "Grey"], reason: "Classic t-shirt and jeans combination — timeless casual pairing" },
-      { item: "Chinos", colors: ["Khaki", "Navy", "Beige"], reason: "Elevates a casual tee for a smart-casual look" },
-      { item: "Cargo Shorts", colors: ["Olive", "Khaki", "Black"], reason: "Relaxed summer pairing with casual comfort" },
+      { item: "Slim Fit Jeans", colors: ["Blue Denim", "Black", "Grey"], reason: "Classic t-shirt and jeans — timeless casual pairing" },
+      { item: "Barrel Leg Pants", colors: ["Cream", "Olive", "Tan"], reason: "2026 trending barrel-leg silhouette for a relaxed modern look" },
+      { item: "Pleated Wide-Leg Trousers", colors: ["Khaki", "Navy", "Beige"], reason: "Elevated wide-leg trend elevates a casual tee effortlessly" },
+      { item: "Cargo Shorts", colors: ["Olive", "Khaki", "Black"], reason: "Relaxed summer pairing with utility-core trend" },
+      { item: "Linen Drawstring Pants", colors: ["White", "Sand", "Light Grey"], reason: "Quiet luxury linen pants for a breezy refined casual look" },
     ],
     footwear: [
-      { item: "White Sneakers", colors: ["White", "Off-White"], reason: "Clean sneakers keep the casual look fresh and modern" },
+      { item: "Chunky Sneakers", colors: ["White", "Off-White", "Grey"], reason: "2026 chunky sneaker trend keeps the look fresh and modern" },
+      { item: "Mesh Ballet Flats", colors: ["Black", "Nude", "Silver"], reason: "Trending mesh flats for a casual-chic feminine touch" },
       { item: "Canvas Slip-ons", colors: ["Navy", "Grey", "White"], reason: "Effortless slip-ons complement casual tees perfectly" },
-      { item: "Running Shoes", colors: ["Black", "Grey"], reason: "Athletic sneakers for a sporty-casual vibe" },
+      { item: "Platform Loafers", colors: ["Black", "Brown", "Burgundy"], reason: "Platform loafers trending in 2026 for smart-casual edge" },
+      { item: "Retro Running Shoes", colors: ["Grey", "Navy", "Multi"], reason: "Retro runner revival — a top sneaker trend of 2026" },
     ],
     accessories: [
       { item: "Casual Watch", colors: ["Silver", "Black"], reason: "A simple watch adds subtle style to a casual outfit" },
