@@ -370,12 +370,16 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     bottomWear: [
       { item: "High-Waist Trousers", colors: ["Black", "Navy", "Cream"], reason: "Flattering silhouette that pairs beautifully with blouses" },
       { item: "Pencil Skirt", colors: ["Black", "Navy", "Grey"], reason: "Classic feminine pairing for a polished look" },
-      { item: "Wide-Leg Pants", colors: ["White", "Cream", "Black"], reason: "Modern and elegant bottom for dressy blouses" },
+      { item: "Wide-Leg Palazzo", colors: ["White", "Cream", "Black"], reason: "2026 palazzo pants for a flowy elegant silhouette" },
+      { item: "Leather Midi Skirt", colors: ["Black", "Brown", "Burgundy"], reason: "Leather skirts trending in 2026 for edgy-feminine contrast" },
+      { item: "Pleated Midi Skirt", colors: ["Sage", "Cream", "Navy"], reason: "Pleated midis are a 2026 wardrobe staple for modern femininity" },
     ],
     footwear: [
-      { item: "Heels", colors: ["Black", "Nude", "Red"], reason: "Heels elevate the feminine elegance of blouses" },
+      { item: "Kitten Heels", colors: ["Black", "Nude", "Red"], reason: "2026 kitten heel comeback — elegant with everyday comfort" },
       { item: "Pointed Flats", colors: ["Black", "Nude", "Metallic"], reason: "Chic yet comfortable alternative to heels" },
+      { item: "Strappy Sandals", colors: ["Gold", "Black", "Tan"], reason: "Delicate strappy sandals for warm-weather elegance" },
       { item: "Ankle Boots", colors: ["Black", "Brown"], reason: "Edgy contrast for a modern feminine look" },
+      { item: "Mary Janes", colors: ["Black", "Burgundy", "White"], reason: "Mary Janes are a 2026 retro-feminine trending shoe" },
     ],
     accessories: [
       { item: "Statement Necklace", colors: ["Gold", "Silver", "Pearl"], reason: "Bold necklace enhances the neckline of blouses" },
