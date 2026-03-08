@@ -452,6 +452,7 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
             outfitDescription={fullOutfitDesc}
             sourceGarmentImage={uploadedImage}
             onRefreshLook={cycleOutfitVariant}
+            refreshKey={styledLookRefreshKey}
           />
 
           {/* Suggestions */}
