@@ -262,6 +262,28 @@ const getFunctionErrorStatus = (error: unknown): number | undefined => {
   return typeof maybeError.context?.status === "number" ? maybeError.context.status : undefined;
 };
 
+const COLOR_WORDS = new Set([
+  "black", "white", "blue", "red", "green", "yellow", "orange", "pink", "purple", "brown", "grey", "gray",
+  "beige", "cream", "ivory", "tan", "khaki", "camel", "maroon", "navy", "teal", "olive", "gold", "silver",
+]);
+
+const stripColorWordsFromItem = (item: string): string => {
+  const tokens = item
+    .split(/\s+/)
+    .map((token) => token.replace(/[^a-zA-Z-]/g, ""))
+    .filter(Boolean);
+
+  if (tokens.length === 0) return item;
+
+  let firstNonColor = 0;
+  while (firstNonColor < tokens.length && COLOR_WORDS.has(tokens[firstNonColor].toLowerCase())) {
+    firstNonColor += 1;
+  }
+
+  const cleaned = tokens.slice(firstNonColor).join(" ").trim();
+  return cleaned || item;
+};
+
 const FullOutfitImage = ({
   outfitDescription,
   sourceGarmentImage,
