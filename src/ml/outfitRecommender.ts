@@ -38,6 +38,7 @@ export interface OutfitRecommendation {
   bottomWear: OutfitSuggestion[];
   footwear: OutfitSuggestion[];
   accessories: OutfitSuggestion[];
+  isFullBodyGarment: boolean;
   colorCompatibility: {
     score: number;
     analysis: string;
