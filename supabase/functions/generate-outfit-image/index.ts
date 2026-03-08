@@ -86,19 +86,20 @@ serve(async (req) => {
       });
 
       if (!response.ok) {
+        const responseText = await response.text();
+
         if (response.status === 429) {
-          return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again shortly." }), {
-            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          lastFailureMessage = "Rate limit exceeded. Please try again shortly.";
+          break;
         }
+
         if (response.status === 402) {
-          return new Response(JSON.stringify({ error: "AI credits exhausted." }), {
-            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          lastFailureMessage = "AI credits exhausted.";
+          break;
         }
-        const t = await response.text();
-        lastFailureMessage = "Image generation failed";
-        console.error("Image gen error:", response.status, t);
+
+        lastFailureMessage = `Image generation failed (${response.status})`;
+        console.error("Image gen error:", response.status, responseText);
         continue;
       }
 
@@ -119,13 +120,12 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ error: lastFailureMessage }), {
-      status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("generate-image error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

@@ -320,7 +320,7 @@ const FullOutfitImage = ({
     setFailed(false);
 
     try {
-      const nextImageUrl = await invokeOutfitImage();
+      const nextImageUrl = await enqueueImageRequest(() => invokeOutfitImage());
       if (requestId !== requestIdRef.current) return;
       setImageUrl(nextImageUrl);
     } catch (error) {
