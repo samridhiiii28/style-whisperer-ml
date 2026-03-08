@@ -195,10 +195,12 @@ const FullOutfitImage = ({
   outfitDescription,
   sourceGarmentImage,
   onRefreshLook,
+  refreshKey,
 }: {
   outfitDescription: string;
   sourceGarmentImage: string;
   onRefreshLook: () => void;
+  refreshKey: number;
 }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -207,6 +209,7 @@ const FullOutfitImage = ({
   const generateFullOutfit = async () => {
     setLoading(true);
     setFailed(false);
+    setImageUrl(null);
     try {
       const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
         body: {
@@ -230,7 +233,7 @@ const FullOutfitImage = ({
 
   useEffect(() => {
     generateFullOutfit();
-  }, [outfitDescription, sourceGarmentImage]);
+  }, [outfitDescription, sourceGarmentImage, refreshKey]);
 
   return (
     <motion.div 
@@ -295,9 +298,11 @@ const FullOutfitImage = ({
 
 const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsDisplayProps) => {
   const [outfitVariant, setOutfitVariant] = useState({ bottom: 0, footwear: 0, accessories: 0 });
+  const [styledLookRefreshKey, setStyledLookRefreshKey] = useState(0);
 
   useEffect(() => {
     setOutfitVariant({ bottom: 0, footwear: 0, accessories: 0 });
+    setStyledLookRefreshKey(0);
   }, [result]);
 
   const pickSuggestion = (
@@ -334,6 +339,7 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
       footwear: footwearCount > 0 ? (prev.footwear + 1) % footwearCount : 0,
       accessories: accessoriesCount > 0 ? (prev.accessories + 1) % accessoriesCount : 0,
     }));
+    setStyledLookRefreshKey((prev) => prev + 1);
   };
 
   return (
@@ -446,6 +452,7 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
             outfitDescription={fullOutfitDesc}
             sourceGarmentImage={uploadedImage}
             onRefreshLook={cycleOutfitVariant}
+            refreshKey={styledLookRefreshKey}
           />
 
           {/* Suggestions */}

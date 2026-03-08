@@ -250,14 +250,18 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     matchKeywords: ["t-shirt", "tee", "tshirt"],
     matchColors: ["neutral", "blue", "red", "green"],
     bottomWear: [
-      { item: "Slim Fit Jeans", colors: ["Blue Denim", "Black", "Grey"], reason: "Classic t-shirt and jeans combination — timeless casual pairing" },
-      { item: "Chinos", colors: ["Khaki", "Navy", "Beige"], reason: "Elevates a casual tee for a smart-casual look" },
-      { item: "Cargo Shorts", colors: ["Olive", "Khaki", "Black"], reason: "Relaxed summer pairing with casual comfort" },
+      { item: "Slim Fit Jeans", colors: ["Blue Denim", "Black", "Grey"], reason: "Classic t-shirt and jeans — timeless casual pairing" },
+      { item: "Barrel Leg Pants", colors: ["Cream", "Olive", "Tan"], reason: "2026 trending barrel-leg silhouette for a relaxed modern look" },
+      { item: "Pleated Wide-Leg Trousers", colors: ["Khaki", "Navy", "Beige"], reason: "Elevated wide-leg trend elevates a casual tee effortlessly" },
+      { item: "Cargo Shorts", colors: ["Olive", "Khaki", "Black"], reason: "Relaxed summer pairing with utility-core trend" },
+      { item: "Linen Drawstring Pants", colors: ["White", "Sand", "Light Grey"], reason: "Quiet luxury linen pants for a breezy refined casual look" },
     ],
     footwear: [
-      { item: "White Sneakers", colors: ["White", "Off-White"], reason: "Clean sneakers keep the casual look fresh and modern" },
+      { item: "Chunky Sneakers", colors: ["White", "Off-White", "Grey"], reason: "2026 chunky sneaker trend keeps the look fresh and modern" },
+      { item: "Mesh Ballet Flats", colors: ["Black", "Nude", "Silver"], reason: "Trending mesh flats for a casual-chic feminine touch" },
       { item: "Canvas Slip-ons", colors: ["Navy", "Grey", "White"], reason: "Effortless slip-ons complement casual tees perfectly" },
-      { item: "Running Shoes", colors: ["Black", "Grey"], reason: "Athletic sneakers for a sporty-casual vibe" },
+      { item: "Platform Loafers", colors: ["Black", "Brown", "Burgundy"], reason: "Platform loafers trending in 2026 for smart-casual edge" },
+      { item: "Retro Running Shoes", colors: ["Grey", "Navy", "Multi"], reason: "Retro runner revival — a top sneaker trend of 2026" },
     ],
     accessories: [
       { item: "Casual Watch", colors: ["Silver", "Black"], reason: "A simple watch adds subtle style to a casual outfit" },
@@ -272,13 +276,17 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     matchColors: ["white", "blue", "neutral", "pink"],
     bottomWear: [
       { item: "Tailored Trousers", colors: ["Charcoal", "Navy", "Black"], reason: "Formal trousers create a polished professional look" },
-      { item: "Chinos", colors: ["Beige", "Navy", "Olive"], reason: "Smart-casual bottom that balances formality nicely" },
+      { item: "Relaxed Fit Chinos", colors: ["Beige", "Sage", "Olive"], reason: "2026 relaxed-fit chinos for a modern smart-casual balance" },
+      { item: "Pleated Dress Pants", colors: ["Dark Indigo", "Charcoal", "Cream"], reason: "Pleated pants trending in 2026 for neo-classic styling" },
+      { item: "Wide-Leg Linen Trousers", colors: ["White", "Sand", "Light Blue"], reason: "Quiet luxury linen trousers for warm-weather sophistication" },
       { item: "Slim Fit Jeans", colors: ["Dark Indigo", "Black"], reason: "Dark jeans dress down a shirt while keeping it sharp" },
     ],
     footwear: [
       { item: "Oxford Shoes", colors: ["Brown", "Black", "Tan"], reason: "Classic formal shoes that pair perfectly with shirts" },
-      { item: "Loafers", colors: ["Brown", "Tan", "Burgundy"], reason: "Smart-casual shoes for a relaxed yet polished look" },
+      { item: "Suede Loafers", colors: ["Camel", "Navy", "Burgundy"], reason: "2026 suede loafer trend for a textured smart-casual look" },
       { item: "Chelsea Boots", colors: ["Black", "Brown"], reason: "Versatile boots that work with formal and casual shirts" },
+      { item: "Monk Strap Shoes", colors: ["Brown", "Tan", "Burgundy"], reason: "Monk straps are a 2026 alternative to traditional oxfords" },
+      { item: "Knit Sneakers", colors: ["White", "Grey", "Navy"], reason: "Clean knit sneakers for a tech-smart casual finish" },
     ],
     accessories: [
       { item: "Leather Belt", colors: ["Brown", "Black"], reason: "Match belt color to shoes for a cohesive look" },
@@ -293,13 +301,17 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     matchColors: ["neutral", "red", "blue", "green"],
     bottomWear: [
       { item: "Joggers", colors: ["Grey", "Black", "Navy"], reason: "Matching athleisure bottom for a coordinated casual look" },
-      { item: "Slim Jeans", colors: ["Black", "Dark Blue"], reason: "Jeans balance the casual hoodie with more structure" },
+      { item: "Straight-Leg Jeans", colors: ["Black", "Dark Blue", "Washed Blue"], reason: "2026 straight-leg jeans add structure to casual hoodies" },
       { item: "Cargo Pants", colors: ["Olive", "Khaki", "Black"], reason: "Streetwear-inspired pairing with utility vibes" },
+      { item: "Track Pants", colors: ["Black", "Grey", "Navy"], reason: "Sporty track pants with side stripes for athleisure trending look" },
+      { item: "Corduroy Pants", colors: ["Brown", "Cream", "Forest Green"], reason: "Corduroy revival in 2026 adds texture and warmth" },
     ],
     footwear: [
-      { item: "Sneakers", colors: ["White", "Black", "Grey"], reason: "Sneakers are the natural footwear match for hoodies" },
+      { item: "Chunky Sneakers", colors: ["White", "Black", "Grey"], reason: "2026 chunky sneakers are the natural match for hoodies" },
       { item: "High-Top Sneakers", colors: ["White", "Black"], reason: "High-tops add streetwear edge to the casual look" },
-      { item: "Boots", colors: ["Black", "Brown"], reason: "Rugged boots add an edgy contrast to soft hoodies" },
+      { item: "Trail Runners", colors: ["Olive", "Grey", "Multi"], reason: "Gorpcore trail runners trending in 2026 outdoor-casual style" },
+      { item: "Puffer Slides", colors: ["Black", "Cream", "Olive"], reason: "2026 puffer slides for an effortless off-duty look" },
+      { item: "Combat Boots", colors: ["Black", "Brown"], reason: "Rugged combat boots add an edgy contrast to soft hoodies" },
     ],
     accessories: [
       { item: "Beanie", colors: ["Black", "Grey", "Navy"], reason: "A beanie completes the cozy casual aesthetic" },
@@ -313,13 +325,17 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     matchColors: ["neutral", "blue", "brown"],
     bottomWear: [
       { item: "Dress Pants", colors: ["Charcoal", "Navy", "Black"], reason: "Matching formal trousers for a complete suit look" },
-      { item: "Tailored Chinos", colors: ["Beige", "Navy", "Grey"], reason: "Smart-casual bottom that pairs well with blazers" },
+      { item: "Tailored Wide-Leg Trousers", colors: ["Cream", "Grey", "Navy"], reason: "2026 wide-leg tailoring for a modern power silhouette" },
       { item: "Slim Trousers", colors: ["Grey", "Black", "Navy"], reason: "Sleek trousers maintain the tailored silhouette" },
+      { item: "Pinstripe Pants", colors: ["Charcoal", "Navy", "Black"], reason: "Pinstripes are a 2026 power-dressing comeback trend" },
+      { item: "Cropped Dress Pants", colors: ["Beige", "Black", "Navy"], reason: "Cropped trousers for a fresh contemporary blazer look" },
     ],
     footwear: [
       { item: "Oxford Shoes", colors: ["Black", "Brown"], reason: "The definitive formal shoe for blazer outfits" },
       { item: "Derby Shoes", colors: ["Brown", "Black", "Tan"], reason: "Slightly less formal but equally polished" },
+      { item: "Pointed Chelsea Boots", colors: ["Black", "Burgundy", "Brown"], reason: "2026 pointed-toe Chelseas for sharp modern tailoring" },
       { item: "Loafers", colors: ["Burgundy", "Brown", "Black"], reason: "Smart-casual option when going tieless" },
+      { item: "Slingback Heels", colors: ["Black", "Nude", "White"], reason: "Slingbacks trending in 2026 for feminine power dressing" },
     ],
     accessories: [
       { item: "Pocket Square", colors: ["White", "Patterned", "Navy"], reason: "Adds a refined touch to any blazer" },
@@ -354,12 +370,16 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     bottomWear: [
       { item: "High-Waist Trousers", colors: ["Black", "Navy", "Cream"], reason: "Flattering silhouette that pairs beautifully with blouses" },
       { item: "Pencil Skirt", colors: ["Black", "Navy", "Grey"], reason: "Classic feminine pairing for a polished look" },
-      { item: "Wide-Leg Pants", colors: ["White", "Cream", "Black"], reason: "Modern and elegant bottom for dressy blouses" },
+      { item: "Wide-Leg Palazzo", colors: ["White", "Cream", "Black"], reason: "2026 palazzo pants for a flowy elegant silhouette" },
+      { item: "Leather Midi Skirt", colors: ["Black", "Brown", "Burgundy"], reason: "Leather skirts trending in 2026 for edgy-feminine contrast" },
+      { item: "Pleated Midi Skirt", colors: ["Sage", "Cream", "Navy"], reason: "Pleated midis are a 2026 wardrobe staple for modern femininity" },
     ],
     footwear: [
-      { item: "Heels", colors: ["Black", "Nude", "Red"], reason: "Heels elevate the feminine elegance of blouses" },
+      { item: "Kitten Heels", colors: ["Black", "Nude", "Red"], reason: "2026 kitten heel comeback — elegant with everyday comfort" },
       { item: "Pointed Flats", colors: ["Black", "Nude", "Metallic"], reason: "Chic yet comfortable alternative to heels" },
+      { item: "Strappy Sandals", colors: ["Gold", "Black", "Tan"], reason: "Delicate strappy sandals for warm-weather elegance" },
       { item: "Ankle Boots", colors: ["Black", "Brown"], reason: "Edgy contrast for a modern feminine look" },
+      { item: "Mary Janes", colors: ["Black", "Burgundy", "White"], reason: "Mary Janes are a 2026 retro-feminine trending shoe" },
     ],
     accessories: [
       { item: "Statement Necklace", colors: ["Gold", "Silver", "Pearl"], reason: "Bold necklace enhances the neckline of blouses" },
