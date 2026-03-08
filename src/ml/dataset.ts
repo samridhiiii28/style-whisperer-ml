@@ -405,7 +405,8 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     accessories: [
       { item: "Tote Bag", colors: ["Brown", "Black", "Canvas"], reason: "Spacious and stylish bag for daily use" },
       { item: "Belt", colors: ["Black", "Brown", "Gold"], reason: "Define the waist for a more structured silhouette" },
-      { item: "Earrings", colors: ["Gold", "Silver", "Pearl"], reason: "Simple earrings complete the feminine look" },
+      { item: "Dangle Earrings", colors: ["Gold", "Silver", "Pearl"], reason: "Simple earrings complete the feminine look" },
+      { item: "Charm Bracelet", colors: ["Gold", "Silver", "Rose Gold"], reason: "A dainty bracelet adds a pretty wrist detail" },
     ],
   },
   {
