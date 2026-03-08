@@ -263,6 +263,8 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
       { item: "Casual Watch", colors: ["Silver", "Black"], reason: "A simple watch adds subtle style to a casual outfit" },
       { item: "Sunglasses", colors: ["Black", "Tortoise"], reason: "Essential casual accessory that completes the look" },
       { item: "Canvas Belt", colors: ["Brown", "Black"], reason: "Practical and stylish belt for jeans pairing" },
+      { item: "Stud Earrings", colors: ["Silver", "Gold"], reason: "Minimal studs add a clean finishing touch" },
+      { item: "Beaded Bracelet", colors: ["Black", "Brown", "Mixed"], reason: "Casual bracelet for a laid-back vibe" },
     ],
   },
   {
@@ -282,6 +284,8 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
       { item: "Leather Belt", colors: ["Brown", "Black"], reason: "Match belt color to shoes for a cohesive look" },
       { item: "Analog Watch", colors: ["Silver", "Gold", "Brown Leather"], reason: "A quality watch elevates any shirt outfit" },
       { item: "Tie", colors: ["Navy", "Burgundy", "Grey"], reason: "Adds formal polish when the occasion calls for it" },
+      { item: "Cuff Bracelet", colors: ["Silver", "Gold"], reason: "Sleek cuff adds a modern professional accent" },
+      { item: "Pearl Earrings", colors: ["Pearl", "Gold", "Silver"], reason: "Classic earrings for a refined elegant look" },
     ],
   },
   {
@@ -301,6 +305,7 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
       { item: "Beanie", colors: ["Black", "Grey", "Navy"], reason: "A beanie completes the cozy casual aesthetic" },
       { item: "Backpack", colors: ["Black", "Grey"], reason: "Practical and stylish for everyday casual outfits" },
       { item: "Digital Watch", colors: ["Black"], reason: "Sporty watch suits the casual athleisure vibe" },
+      { item: "Woven Bracelet", colors: ["Black", "Brown", "Mixed"], reason: "Casual woven bracelet adds texture to streetwear" },
     ],
   },
   {
@@ -320,6 +325,8 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
       { item: "Pocket Square", colors: ["White", "Patterned", "Navy"], reason: "Adds a refined touch to any blazer" },
       { item: "Leather Belt", colors: ["Black", "Brown"], reason: "Essential formal accessory — match to shoe color" },
       { item: "Cufflinks", colors: ["Silver", "Gold"], reason: "Elegant detail for formal shirt-and-blazer combos" },
+      { item: "Elegant Earrings", colors: ["Gold", "Silver", "Pearl"], reason: "Subtle earrings add polish to formal looks" },
+      { item: "Leather Bracelet", colors: ["Black", "Brown"], reason: "A refined leather bracelet adds a personal touch" },
     ],
   },
   {
@@ -357,17 +364,16 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     accessories: [
       { item: "Statement Necklace", colors: ["Gold", "Silver", "Pearl"], reason: "Bold necklace enhances the neckline of blouses" },
       { item: "Clutch", colors: ["Black", "Gold", "Matching"], reason: "Elegant handbag for a polished feminine outfit" },
-      { item: "Earrings", colors: ["Gold", "Silver", "Crystal"], reason: "Delicate or statement earrings complement blouses" },
+      { item: "Chandelier Earrings", colors: ["Gold", "Silver", "Crystal"], reason: "Chandelier earrings add drama and movement" },
+      { item: "Hoop Earrings", colors: ["Gold", "Silver"], reason: "Classic hoops frame the face beautifully" },
+      { item: "Chain Bracelet", colors: ["Gold", "Silver", "Rose Gold"], reason: "Elegant chain bracelet for a refined wrist accent" },
+      { item: "Tennis Bracelet", colors: ["Silver", "Gold", "Crystal"], reason: "A sparkling tennis bracelet elevates any blouse" },
     ],
   },
   {
-    matchKeywords: ["dress", "gown", "frock", "sundress", "bodycon", "maxi", "mini dress"],
+    matchKeywords: ["dress", "gown", "frock", "sundress", "bodycon", "maxi", "mini dress", "saree", "sari", "lehenga"],
     matchColors: ["neutral", "red", "pink", "purple", "brown", "blue", "green"],
-    bottomWear: [
-      { item: "Sheer Tights", colors: ["Black", "Nude", "Navy"], reason: "Tights add warmth and elegance under dresses" },
-      { item: "Shapewear Shorts", colors: ["Nude", "Black"], reason: "Smooth silhouette underneath fitted dresses" },
-      { item: "Leggings (layered)", colors: ["Black", "Grey"], reason: "Layer under shorter dresses for a casual college look" },
-    ],
+    bottomWear: [],
     footwear: [
       { item: "Strappy Heels", colors: ["Black", "Nude", "Gold"], reason: "Elegant heels that complement any dress beautifully" },
       { item: "Ankle Boots", colors: ["Black", "Brown", "Tan"], reason: "Trendy boots add an edgy contrast to dresses" },
@@ -376,9 +382,11 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     ],
     accessories: [
       { item: "Statement Earrings", colors: ["Gold", "Silver", "Crystal"], reason: "Earrings draw attention and frame the face beautifully" },
+      { item: "Drop Earrings", colors: ["Gold", "Silver", "Pearl"], reason: "Elegant drop earrings add movement and glamour" },
+      { item: "Charm Bracelet", colors: ["Gold", "Silver", "Rose Gold"], reason: "A delicate bracelet adds subtle wrist detail" },
+      { item: "Bangle Set", colors: ["Gold", "Silver", "Mixed Metal"], reason: "Stacked bangles create a chic layered look" },
       { item: "Clutch Bag", colors: ["Black", "Gold", "Matching"], reason: "A sleek clutch keeps the look polished and put-together" },
       { item: "Layered Necklace", colors: ["Gold", "Silver"], reason: "Delicate layers add charm to dress necklines" },
-      { item: "Crossbody Bag", colors: ["Black", "Brown", "Tan"], reason: "Practical yet stylish for everyday college outings" },
       { item: "Hair Accessories", colors: ["Black", "Gold", "Matching"], reason: "Clips or headbands add a finishing touch" },
     ],
   },
@@ -397,7 +405,8 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     accessories: [
       { item: "Tote Bag", colors: ["Brown", "Black", "Canvas"], reason: "Spacious and stylish bag for daily use" },
       { item: "Belt", colors: ["Black", "Brown", "Gold"], reason: "Define the waist for a more structured silhouette" },
-      { item: "Earrings", colors: ["Gold", "Silver", "Pearl"], reason: "Simple earrings complete the feminine look" },
+      { item: "Dangle Earrings", colors: ["Gold", "Silver", "Pearl"], reason: "Simple earrings complete the feminine look" },
+      { item: "Charm Bracelet", colors: ["Gold", "Silver", "Rose Gold"], reason: "A dainty bracelet adds a pretty wrist detail" },
     ],
   },
   {
@@ -412,6 +421,7 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     accessories: [
       { item: "Statement Belt", colors: ["Black", "Brown", "Gold"], reason: "A belt cinches the waist and adds definition" },
       { item: "Hoop Earrings", colors: ["Gold", "Silver"], reason: "Hoops add a bold finishing touch" },
+      { item: "Cuff Bracelet", colors: ["Gold", "Silver", "Rose Gold"], reason: "A bold cuff bracelet completes the jumpsuit look" },
       { item: "Crossbody Bag", colors: ["Black", "Tan", "Brown"], reason: "Hands-free bag for a practical stylish outfit" },
     ],
   },

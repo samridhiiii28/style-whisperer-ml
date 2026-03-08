@@ -55,6 +55,7 @@ export interface FashionMLAnalysis {
     footwear: { item: string; color: string; reason: string }[];
     accessories: { item: string; color: string; reason: string }[];
   };
+  isFullBodyGarment: boolean;
   colorCompatibility: {
     score: number;
     analysis: string;
@@ -88,6 +89,7 @@ export async function runFashionMLAnalysis(imageBase64: string, description: str
       footwear: recommendations.footwear,
       accessories: recommendations.accessories,
     },
+    isFullBodyGarment: recommendations.isFullBodyGarment,
     colorCompatibility: recommendations.colorCompatibility,
     styleAnalysis: recommendations.styleAnalysis,
     overallScore: recommendations.colorCompatibility.score,
