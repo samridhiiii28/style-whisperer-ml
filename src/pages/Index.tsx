@@ -17,7 +17,7 @@ const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [outfitDescription, setOutfitDescription] = useState("");
-  const [showAuthGate, setShowAuthGate] = useState(false);
+  
   const formRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
