@@ -65,29 +65,73 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
+  const requestIdRef = useRef(0);
+
+  const invokeItemImage = async (maxAttempts = 3): Promise<string> => {
+    const promptVariants = [
+      `${itemColor} ${itemName}`,
+      `${itemName} in ${itemColor}`,
+      itemName,
+    ];
+
+    let lastError = "Failed to generate item image";
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const prompt = promptVariants[Math.min(attempt - 1, promptVariants.length - 1)];
+      const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
+        body: { prompt, type: "item" },
+      });
+
+      if (!error && !data?.error && data?.imageUrl) {
+        return data.imageUrl;
+      }
+
+      const status = getFunctionErrorStatus(error);
+      lastError = data?.error || error?.message || lastError;
+      const isRateLimit = status === 429 || /429|rate limit/i.test(lastError);
+      const isCredits = status === 402 || /402|credits exhausted|payment required/i.test(lastError);
+
+      if (isRateLimit || isCredits) {
+        throw new Error(lastError);
+      }
+
+      if (attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, 700 * attempt));
+      }
+    }
+
+    throw new Error(lastError);
+  };
 
   const generateImage = async () => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     setFailed(false);
+    setImageUrl(null);
+
     try {
-      const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
-        body: { prompt: `${itemColor} ${itemName}`, type: "item" },
-      });
-      if (error || data?.error) {
-        setFailed(true);
-        if (data?.error) toast.error(data.error);
-      } else {
-        setImageUrl(data.imageUrl);
-      }
-    } catch {
+      const nextImageUrl = await invokeItemImage();
+      if (requestId !== requestIdRef.current) return;
+      setImageUrl(nextImageUrl);
+    } catch (error) {
+      if (requestId !== requestIdRef.current) return;
       setFailed(true);
+      const message = error instanceof Error ? error.message : "Failed to generate item image";
+      if (/429|rate limit|credits exhausted|payment required/i.test(message)) {
+        toast.error(message);
+      }
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     generateImage();
+    return () => {
+      requestIdRef.current += 1;
+    };
   }, [itemName, itemColor]);
 
   return (
