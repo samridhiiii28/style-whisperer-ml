@@ -5,6 +5,12 @@ import MLInsightsPanel from "./MLInsightsPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+let itemImageRequestQueue = Promise.resolve();
+const enqueueItemImageRequest = <T,>(task: () => Promise<T>): Promise<T> => {
+  const queuedTask = itemImageRequestQueue.then(task, task);
+  itemImageRequestQueue = queuedTask.then(() => undefined, () => undefined);
+  return queuedTask;
+};
 export interface AIAnalysisResult {
   detectedItem: string;
   detectedColors: { name: string; hex: string }[];
