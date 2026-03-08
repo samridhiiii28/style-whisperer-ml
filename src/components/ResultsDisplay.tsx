@@ -262,14 +262,40 @@ const getFunctionErrorStatus = (error: unknown): number | undefined => {
   return typeof maybeError.context?.status === "number" ? maybeError.context.status : undefined;
 };
 
+const COLOR_WORDS = new Set([
+  "black", "white", "blue", "red", "green", "yellow", "orange", "pink", "purple", "brown", "grey", "gray",
+  "beige", "cream", "ivory", "tan", "khaki", "camel", "maroon", "navy", "teal", "olive", "gold", "silver",
+]);
+
+const stripColorWordsFromItem = (item: string): string => {
+  const tokens = item
+    .split(/\s+/)
+    .map((token) => token.replace(/[^a-zA-Z-]/g, ""))
+    .filter(Boolean);
+
+  if (tokens.length === 0) return item;
+
+  let firstNonColor = 0;
+  while (firstNonColor < tokens.length && COLOR_WORDS.has(tokens[firstNonColor].toLowerCase())) {
+    firstNonColor += 1;
+  }
+
+  const cleaned = tokens.slice(firstNonColor).join(" ").trim();
+  return cleaned || item;
+};
+
 const FullOutfitImage = ({
   outfitDescription,
   sourceGarmentImage,
+  sourceGarmentColorName,
+  sourceGarmentColorHex,
   onRefreshLook,
   refreshKey,
 }: {
   outfitDescription: string;
   sourceGarmentImage: string;
+  sourceGarmentColorName?: string;
+  sourceGarmentColorHex?: string;
   onRefreshLook: () => void;
   refreshKey: number;
 }) => {
@@ -288,6 +314,8 @@ const FullOutfitImage = ({
           prompt: `${outfitDescription} | variation ${refreshKey + 1} option ${attempt}`,
           type: "full_outfit",
           sourceImageBase64: sourceGarmentImage,
+          sourceGarmentColorName,
+          sourceGarmentColorHex,
         },
       });
 
@@ -425,8 +453,16 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
   const selectedFootwear = pickSuggestion(result.suggestions.footwear, outfitVariant.footwear);
   const selectedAccessory = pickSuggestion(result.suggestions.accessories, outfitVariant.accessories);
 
+  const primaryGarmentColorName = result.detectedColors?.[0]?.name?.trim();
+  const primaryGarmentColorHex = result.detectedColors?.[0]?.hex;
+  const cleanedDetectedItem = stripColorWordsFromItem(result.detectedItem);
+
   const fullOutfitDesc = (() => {
-    const parts = [result.detectedItem];
+    const garmentLead = primaryGarmentColorName
+      ? `${primaryGarmentColorName} ${cleanedDetectedItem}`
+      : cleanedDetectedItem;
+
+    const parts = [garmentLead];
     if (selectedBottom) parts.push(`${selectedBottom.color} ${selectedBottom.item}`);
     if (selectedFootwear) parts.push(`${selectedFootwear.color} ${selectedFootwear.item}`);
     if (selectedAccessory) parts.push(`${selectedAccessory.color} ${selectedAccessory.item}`);
@@ -568,6 +604,8 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
           <FullOutfitImage
             outfitDescription={fullOutfitDesc}
             sourceGarmentImage={uploadedImage}
+            sourceGarmentColorName={primaryGarmentColorName}
+            sourceGarmentColorHex={primaryGarmentColorHex}
             onRefreshLook={cycleOutfitVariant}
             refreshKey={styledLookRefreshKey}
           />

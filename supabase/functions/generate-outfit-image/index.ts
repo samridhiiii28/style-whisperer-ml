@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { prompt, type, sourceImageBase64 } = await req.json();
+    const { prompt, type, sourceImageBase64, sourceGarmentColorName, sourceGarmentColorHex } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -35,11 +35,15 @@ serve(async (req) => {
       const basePrompt = `Generate a high-quality fashion photograph of a ${modelGender} wearing this complete outfit concept: ${prompt}. Full body shot, professional studio lighting, clean white background, fashion editorial style, high resolution.`;
 
       if (hasSourceImage) {
+        const colorLock = sourceGarmentColorName || sourceGarmentColorHex
+          ? `The uploaded top must keep the exact same color as the source garment (${sourceGarmentColorName ?? "unknown"}${sourceGarmentColorHex ? `, ${sourceGarmentColorHex}` : ""}).`
+          : "The uploaded top must keep the exact same color as the source garment.";
+
         attemptContents = [
           [
             {
               type: "text",
-              text: `${basePrompt} Use the uploaded garment image as a strong visual reference. Keep similar neckline, silhouette, fabric feel, and color family. Complete the look with matching bottoms, footwear, and accessories where needed.`,
+              text: `${basePrompt} Use the uploaded garment image as the primary reference. ${colorLock} Do not recolor, tint, warm-shift, or cool-shift the top. Preserve the same neckline, knit texture, sleeve shape, and silhouette from the uploaded top while styling only the other outfit pieces.`,
             },
             {
               type: "image_url",
@@ -49,14 +53,13 @@ serve(async (req) => {
           [
             {
               type: "text",
-              text: `${basePrompt} Create a cohesive look inspired by the uploaded garment. If text color words conflict with the uploaded image, prioritize the uploaded garment's actual colors and shape.`,
+              text: `${basePrompt} STRICT REQUIREMENT: top color must match uploaded garment exactly. If text wording conflicts with image color, always trust the uploaded garment image.`,
             },
             {
               type: "image_url",
               image_url: { url: sourceImageBase64 },
             },
           ],
-          basePrompt,
         ];
       } else {
         attemptContents = [basePrompt];
