@@ -305,6 +305,7 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
       { item: "Beanie", colors: ["Black", "Grey", "Navy"], reason: "A beanie completes the cozy casual aesthetic" },
       { item: "Backpack", colors: ["Black", "Grey"], reason: "Practical and stylish for everyday casual outfits" },
       { item: "Digital Watch", colors: ["Black"], reason: "Sporty watch suits the casual athleisure vibe" },
+      { item: "Woven Bracelet", colors: ["Black", "Brown", "Mixed"], reason: "Casual woven bracelet adds texture to streetwear" },
     ],
   },
   {
