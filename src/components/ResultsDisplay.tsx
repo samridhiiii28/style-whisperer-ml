@@ -116,19 +116,17 @@ const SuggestionCard = ({ icon: Icon, title, items }: {
       <Icon size={18} className="text-primary" />
       <h3 className="font-display text-lg font-semibold text-foreground">{title}</h3>
     </div>
-    <div className="space-y-3">
+    <div className="space-y-4">
       {items.map((item, i) => (
-        <div key={i} className="flex items-start gap-4 p-3 bg-secondary/50 rounded-sm">
+        <div key={i} className="p-4 bg-secondary/50 rounded-sm">
           <ItemImageCard itemName={item.item} itemColor={item.color} />
-          <div className="flex-1">
-            <div className="flex items-start gap-2">
-              <Check size={14} className="text-primary mt-0.5 shrink-0" />
-              <div>
-                <p className="text-sm font-body text-foreground font-medium">
-                  {item.item} <span className="text-muted-foreground">— {item.color}</span>
-                </p>
-                <p className="text-xs text-muted-foreground font-body mt-0.5">{item.reason}</p>
-              </div>
+          <div className="mt-3 flex items-start gap-2">
+            <Check size={14} className="text-primary mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-body text-foreground font-medium">
+                {item.item} <span className="text-muted-foreground">— {item.color}</span>
+              </p>
+              <p className="text-xs text-muted-foreground font-body mt-0.5">{item.reason}</p>
             </div>
           </div>
         </div>
