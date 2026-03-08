@@ -283,6 +283,11 @@ export function generateRecommendations(
     ];
   }
 
+  const occasionOverrides = getOccasionSuggestionOverrides(occasion, fullBody);
+  bottomWear = mergeSuggestions(bottomWear, occasionOverrides.bottomWear);
+  footwear = mergeSuggestions(footwear, occasionOverrides.footwear);
+  accessories = mergeSuggestions(accessories, occasionOverrides.accessories);
+
   // Calculate color compatibility
   const suggestedColorNames = [
     ...bottomWear.map(s => s.color),
