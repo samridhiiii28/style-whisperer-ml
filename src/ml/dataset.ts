@@ -361,13 +361,9 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     ],
   },
   {
-    matchKeywords: ["dress", "gown", "frock", "sundress", "bodycon", "maxi", "mini dress"],
+    matchKeywords: ["dress", "gown", "frock", "sundress", "bodycon", "maxi", "mini dress", "saree", "sari", "lehenga"],
     matchColors: ["neutral", "red", "pink", "purple", "brown", "blue", "green"],
-    bottomWear: [
-      { item: "Sheer Tights", colors: ["Black", "Nude", "Navy"], reason: "Tights add warmth and elegance under dresses" },
-      { item: "Shapewear Shorts", colors: ["Nude", "Black"], reason: "Smooth silhouette underneath fitted dresses" },
-      { item: "Leggings (layered)", colors: ["Black", "Grey"], reason: "Layer under shorter dresses for a casual college look" },
-    ],
+    bottomWear: [],
     footwear: [
       { item: "Strappy Heels", colors: ["Black", "Nude", "Gold"], reason: "Elegant heels that complement any dress beautifully" },
       { item: "Ankle Boots", colors: ["Black", "Brown", "Tan"], reason: "Trendy boots add an edgy contrast to dresses" },
@@ -376,9 +372,11 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     ],
     accessories: [
       { item: "Statement Earrings", colors: ["Gold", "Silver", "Crystal"], reason: "Earrings draw attention and frame the face beautifully" },
+      { item: "Drop Earrings", colors: ["Gold", "Silver", "Pearl"], reason: "Elegant drop earrings add movement and glamour" },
+      { item: "Charm Bracelet", colors: ["Gold", "Silver", "Rose Gold"], reason: "A delicate bracelet adds subtle wrist detail" },
+      { item: "Bangle Set", colors: ["Gold", "Silver", "Mixed Metal"], reason: "Stacked bangles create a chic layered look" },
       { item: "Clutch Bag", colors: ["Black", "Gold", "Matching"], reason: "A sleek clutch keeps the look polished and put-together" },
       { item: "Layered Necklace", colors: ["Gold", "Silver"], reason: "Delicate layers add charm to dress necklines" },
-      { item: "Crossbody Bag", colors: ["Black", "Brown", "Tan"], reason: "Practical yet stylish for everyday college outings" },
       { item: "Hair Accessories", colors: ["Black", "Gold", "Matching"], reason: "Clips or headbands add a finishing touch" },
     ],
   },
