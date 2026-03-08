@@ -132,6 +132,45 @@ function isBackgroundPixel(r: number, g: number, b: number, a: number): boolean 
   if (a < 200) return true;
   if (r > 240 && g > 240 && b > 240) return true; // white bg
   if (r < 10 && g < 10 && b < 10) return true;     // pure black bg
+  // Light grey backgrounds
+  if (r > 220 && g > 220 && b > 220 && Math.abs(r - g) < 10 && Math.abs(g - b) < 10) return true;
+  return false;
+}
+
+/**
+ * Detect if a pixel is likely a skin tone.
+ * Uses multiple heuristics to cover a wide range of skin colors.
+ */
+function isSkinTonePixel(r: number, g: number, b: number): boolean {
+  // Rule 1: Classic skin-tone detection (works for lighter to medium tones)
+  // Skin typically has R > G > B with specific ratios
+  if (r > 95 && g > 40 && b > 20 &&
+      r > g && r > b &&
+      (r - g) > 15 &&
+      Math.abs(r - g) < 100 &&
+      (r - b) > 15) {
+    // Additional HSV-like check: skin has low saturation relative to brightness
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const saturation = max === 0 ? 0 : (max - min) / max;
+    // Skin tones typically have saturation between 0.1 and 0.6
+    if (saturation > 0.1 && saturation < 0.55) {
+      return true;
+    }
+  }
+  
+  // Rule 2: Detect beige/tan skin tones specifically
+  // These are the ones causing false "Beige" detection
+  if (r > 160 && g > 120 && b > 90 &&
+      r < 240 && g < 200 && b < 170 &&
+      (r - b) > 30 && (r - b) < 100 &&
+      (r - g) > 5 && (r - g) < 60) {
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const saturation = max === 0 ? 0 : (max - min) / max;
+    if (saturation < 0.4) return true;
+  }
+
   return false;
 }
 
@@ -169,18 +208,35 @@ export function extractDominantColors(imageBase64: string, numColors = 4): Promi
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const pixels: Point[] = [];
 
-        // Sample every 2nd pixel for speed, skip backgrounds
-        for (let i = 0; i < imageData.data.length; i += 8) {
-          const r = imageData.data[i];
-          const g = imageData.data[i + 1];
-          const b = imageData.data[i + 2];
-          const a = imageData.data[i + 3];
-          if (!isBackgroundPixel(r, g, b, a)) {
-            pixels.push({ r, g, b });
+        // Focus on center 70% of the image where the garment is most likely
+        const marginX = Math.floor(canvas.width * 0.15);
+        const marginY = Math.floor(canvas.height * 0.10);
+        const endX = canvas.width - marginX;
+        const endY = canvas.height - Math.floor(canvas.height * 0.05);
+
+        // First pass: collect non-background, non-skin pixels (garment pixels)
+        const garmentPixels: Point[] = [];
+        const allNonBgPixels: Point[] = [];
+
+        for (let y = marginY; y < endY; y += 2) {
+          for (let x = marginX; x < endX; x += 2) {
+            const i = (y * canvas.width + x) * 4;
+            const r = imageData.data[i];
+            const g = imageData.data[i + 1];
+            const b = imageData.data[i + 2];
+            const a = imageData.data[i + 3];
+            if (isBackgroundPixel(r, g, b, a)) continue;
+            allNonBgPixels.push({ r, g, b });
+            if (!isSkinTonePixel(r, g, b)) {
+              garmentPixels.push({ r, g, b });
+            }
           }
         }
 
-        if (pixels.length < 10) {
+        // Use garment pixels if we have enough, otherwise fall back to all non-bg pixels
+        const selectedPixels = garmentPixels.length >= 30 ? garmentPixels : allNonBgPixels;
+
+        if (selectedPixels.length < 10) {
           // Not enough non-background pixels
           resolve([{
             name: "Unknown", hex: "#808080", rgb: [128, 128, 128],
@@ -190,11 +246,11 @@ export function extractDominantColors(imageBase64: string, numColors = 4): Promi
         }
 
         // Run K-Means
-        const centroids = kMeansClustering(pixels, Math.min(numColors, 6));
+        const centroids = kMeansClustering(selectedPixels, Math.min(numColors, 6));
 
         // Count pixels per centroid
         const counts = new Array(centroids.length).fill(0);
-        for (const p of pixels) {
+        for (const p of selectedPixels) {
           let minDist = Infinity;
           let minIdx = 0;
           for (let j = 0; j < centroids.length; j++) {
@@ -212,7 +268,7 @@ export function extractDominantColors(imageBase64: string, numColors = 4): Promi
               name: named.name,
               hex: rgbToHex(c.r, c.g, c.b),
               rgb: [c.r, c.g, c.b] as [number, number, number],
-              percentage: Math.round((counts[i] / pixels.length) * 100),
+              percentage: Math.round((counts[i] / selectedPixels.length) * 100),
               family: named.family,
               warmth: named.warmth,
             };
