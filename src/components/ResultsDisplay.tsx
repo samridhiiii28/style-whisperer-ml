@@ -604,6 +604,8 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
           <FullOutfitImage
             outfitDescription={fullOutfitDesc}
             sourceGarmentImage={uploadedImage}
+            sourceGarmentColorName={primaryGarmentColorName}
+            sourceGarmentColorHex={primaryGarmentColorHex}
             onRefreshLook={cycleOutfitVariant}
             refreshKey={styledLookRefreshKey}
           />
