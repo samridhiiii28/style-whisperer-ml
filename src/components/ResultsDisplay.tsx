@@ -314,15 +314,11 @@ const FullOutfitImage = ({
   sourceGarmentImage,
   sourceGarmentColorName,
   sourceGarmentColorHex,
-  onRefreshLook,
-  refreshKey,
 }: {
   outfitDescription: string;
   sourceGarmentImage: string;
   sourceGarmentColorName?: string;
   sourceGarmentColorHex?: string;
-  onRefreshLook: () => void;
-  refreshKey: number;
 }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
