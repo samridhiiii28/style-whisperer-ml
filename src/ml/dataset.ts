@@ -325,6 +325,8 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
       { item: "Pocket Square", colors: ["White", "Patterned", "Navy"], reason: "Adds a refined touch to any blazer" },
       { item: "Leather Belt", colors: ["Black", "Brown"], reason: "Essential formal accessory — match to shoe color" },
       { item: "Cufflinks", colors: ["Silver", "Gold"], reason: "Elegant detail for formal shirt-and-blazer combos" },
+      { item: "Elegant Earrings", colors: ["Gold", "Silver", "Pearl"], reason: "Subtle earrings add polish to formal looks" },
+      { item: "Leather Bracelet", colors: ["Black", "Brown"], reason: "A refined leather bracelet adds a personal touch" },
     ],
   },
   {
