@@ -215,7 +215,7 @@ export function classifyOccasion(
   const features = { formality, neutralRatio, saturationAvg };
 
   // Decision Tree prediction
-  const primary = traverseTree(DECISION_TREE, features);
+  let primary = traverseTree(DECISION_TREE, features);
 
   // K-NN for alternatives and confidence
   const neighbors = knnVote(features, 5);
@@ -223,29 +223,38 @@ export function classifyOccasion(
   for (const n of neighbors) {
     voteCounts[n.label] = (voteCounts[n.label] || 0) + 1;
   }
-  
+
+  // Description hint can override primary occasion when explicit (office/college/etc.)
+  let hintedOccasion: string | undefined;
+  if (description) {
+    const lower = description.toLowerCase();
+    const hintMap: Record<string, string> = {
+      office: "Office", work: "Office", college: "College", school: "College", campus: "College",
+      party: "Party", date: "Date Night", wedding: "Wedding", formal: "Formal",
+      casual: "Casual", gym: "Sports", sport: "Sports", festival: "Festival",
+    };
+    for (const [keyword, occasion] of Object.entries(hintMap)) {
+      if (lower.includes(keyword)) {
+        hintedOccasion = occasion;
+        break;
+      }
+    }
+  }
+  if (hintedOccasion) {
+    primary = hintedOccasion;
+  }
+
   const confidence = Math.round(((voteCounts[primary] || 1) / neighbors.length) * 100);
-  
+
   const alternatives = Object.entries(voteCounts)
     .filter(([label]) => label !== primary)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 2)
     .map(([label]) => label);
 
-  // Check description for hints
-  if (description) {
-    const lower = description.toLowerCase();
-    const hintMap: Record<string, string> = {
-      office: "Office", work: "Office", college: "College", school: "College",
-      party: "Party", date: "Date Night", wedding: "Wedding", formal: "Formal",
-      casual: "Casual", gym: "Sports", sport: "Sports", festival: "Festival",
-    };
-    for (const [keyword, occasion] of Object.entries(hintMap)) {
-      if (lower.includes(keyword) && occasion !== primary && !alternatives.includes(occasion)) {
-        alternatives.unshift(occasion);
-        break;
-      }
-    }
+  // Keep the model's tree output visible as an alternative when description forced a different primary
+  if (hintedOccasion && !alternatives.includes(traverseTree(DECISION_TREE, features)) && traverseTree(DECISION_TREE, features) !== primary) {
+    alternatives.unshift(traverseTree(DECISION_TREE, features));
   }
 
   // Generate reasoning
