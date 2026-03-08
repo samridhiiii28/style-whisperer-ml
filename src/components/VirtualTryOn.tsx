@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Upload, User, Sparkles, X, Loader2, Droplets } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { analyzeSkinTone, recommendLipShades, type LipAnalysisResult } from "@/lib/lipShadeAnalyzer";
+import { analyzeSkinTone, recommendLipShades, type LipAnalysisResult } from "@/ml/lipShadeAnalyzer";
 
 interface VirtualTryOnProps {
   outfitDescription: string;
