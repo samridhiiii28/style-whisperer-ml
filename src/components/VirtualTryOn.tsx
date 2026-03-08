@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Upload, User, Sparkles, X, Loader2, Droplets } from "lucide-react";
+import { Upload, User, Sparkles, X, Loader2, Droplets, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { analyzeSkinTone, recommendLipShades, type LipAnalysisResult } from "@/ml/lipShadeAnalyzer";
@@ -12,12 +12,14 @@ interface VirtualTryOnProps {
 
 const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOnProps) => {
   const [userImage, setUserImage] = useState<string | null>(null);
-  const [tryOnResult, setTryOnResult] = useState<string | null>(null);
+  const [tryOnResults, setTryOnResults] = useState<string[]>([]);
+  const [currentResultIndex, setCurrentResultIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [lipAnalysis, setLipAnalysis] = useState<LipAnalysisResult | null>(null);
   const [lipAnalyzing, setLipAnalyzing] = useState(false);
   const [selectedShadeIndex, setSelectedShadeIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const maxResults = 4;
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -30,10 +32,10 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
     reader.onload = () => {
       const result = reader.result as string;
       setUserImage(result);
-      setTryOnResult(null);
+      setTryOnResults([]);
+      setCurrentResultIndex(0);
       setLipAnalysis(null);
       setSelectedShadeIndex(0);
-      // Auto-analyze skin tone
       analyzeLipShades(result);
     };
     reader.readAsDataURL(file);
@@ -55,16 +57,16 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
 
   const removeImage = () => {
     setUserImage(null);
-    setTryOnResult(null);
+    setTryOnResults([]);
+    setCurrentResultIndex(0);
     setLipAnalysis(null);
     setSelectedShadeIndex(0);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleTryOn = async () => {
+  const handleTryOn = useCallback(async () => {
     if (!userImage) return;
     setIsLoading(true);
-    setTryOnResult(null);
 
     try {
       const { data, error } = await supabase.functions.invoke("virtual-tryon", {
@@ -81,14 +83,27 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
         return;
       }
 
-      setTryOnResult(data.imageUrl);
+      setTryOnResults((prev) => {
+        const next = [...prev, data.imageUrl];
+        setCurrentResultIndex(next.length - 1);
+        return next.length > maxResults ? next.slice(-maxResults) : next;
+      });
     } catch (err) {
       console.error("Try-on error:", err);
       toast.error("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userImage, outfitDescription, referenceGarmentImage]);
+
+  // Auto-generate first try-on when user uploads photo
+  useEffect(() => {
+    if (userImage && tryOnResults.length === 0) {
+      handleTryOn();
+    }
+  }, [userImage]);
+
+  const currentResult = tryOnResults[currentResultIndex] ?? null;
 
   return (
     <section className="py-24 px-6">
@@ -153,19 +168,52 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
               <p className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-3">
                 Try-On Result
               </p>
-              <div className="w-full h-80 border border-gold/20 rounded-sm bg-card/50 flex items-center justify-center overflow-hidden">
+              <div className="w-full h-80 border border-gold/20 rounded-sm bg-card/50 flex items-center justify-center overflow-hidden relative">
                 {isLoading ? (
                   <div className="flex flex-col items-center gap-3">
                     <Loader2 size={32} className="text-primary animate-spin" />
                     <p className="text-sm font-body text-muted-foreground">Generating try-on...</p>
                     <p className="text-xs font-body text-muted-foreground/60">This may take 15-30 seconds</p>
                   </div>
-                ) : tryOnResult ? (
-                  <img
-                    src={tryOnResult}
-                    alt="Virtual try-on result"
-                    className="w-full h-full object-contain"
-                  />
+                ) : currentResult ? (
+                  <>
+                    <img
+                      src={currentResult}
+                      alt="Virtual try-on result"
+                      className="w-full h-full object-contain"
+                    />
+                    {/* Navigation arrows for multiple results */}
+                    {tryOnResults.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => setCurrentResultIndex((i) => Math.max(0, i - 1))}
+                          disabled={currentResultIndex === 0}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-card/90 border border-gold/20 flex items-center justify-center hover:bg-primary/10 transition-colors disabled:opacity-30"
+                        >
+                          <ChevronLeft size={16} className="text-foreground" />
+                        </button>
+                        <button
+                          onClick={() => setCurrentResultIndex((i) => Math.min(tryOnResults.length - 1, i + 1))}
+                          disabled={currentResultIndex === tryOnResults.length - 1}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-card/90 border border-gold/20 flex items-center justify-center hover:bg-primary/10 transition-colors disabled:opacity-30"
+                        >
+                          <ChevronRight size={16} className="text-foreground" />
+                        </button>
+                        {/* Dots indicator */}
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                          {tryOnResults.map((_, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setCurrentResultIndex(i)}
+                              className={`w-2 h-2 rounded-full transition-all ${
+                                i === currentResultIndex ? "bg-primary scale-125" : "bg-muted-foreground/40"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </>
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-muted-foreground/50">
                     <Upload size={24} />
@@ -176,22 +224,27 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
             </div>
           </div>
 
-          {/* Outfit description shown */}
-          <div className="mt-6 p-4 bg-card border border-gold/10 rounded-sm">
-            <p className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-1">Outfit to try on</p>
-            <p className="text-sm font-body text-foreground">{outfitDescription}</p>
-          </div>
-
-          {/* Try-on button */}
-          <div className="mt-6 flex justify-center">
-            <button
-              onClick={handleTryOn}
-              disabled={!userImage || isLoading}
-              className="px-10 py-4 bg-primary text-primary-foreground font-body font-medium tracking-wider uppercase text-sm rounded-sm hover:bg-gold-light transition-colors duration-300 glow-gold disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-3"
-            >
-              <Sparkles size={16} />
-              {isLoading ? "Generating..." : "Try On This Outfit"}
-            </button>
+          {/* Outfit description + refresh */}
+          <div className="mt-6 p-4 bg-card border border-gold/10 rounded-sm flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-1">Outfit to try on</p>
+              <p className="text-sm font-body text-foreground">{outfitDescription}</p>
+            </div>
+            {userImage && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground font-body">
+                  {tryOnResults.length}/{maxResults}
+                </span>
+                <button
+                  onClick={handleTryOn}
+                  disabled={isLoading || tryOnResults.length >= maxResults}
+                  title="Generate another try-on look"
+                  className="w-9 h-9 rounded-full border border-gold/30 bg-secondary/50 text-primary flex items-center justify-center hover:bg-primary/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <RefreshCw size={14} className={isLoading ? "animate-spin" : ""} />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Lip Shade Recommendation Section */}
@@ -220,7 +273,6 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
                   </div>
                 ) : lipAnalysis ? (
                   <>
-                    {/* Skin tone detected */}
                     <div className="flex items-center gap-4 mb-6 p-4 bg-secondary/50 rounded-sm">
                       <div
                         className="w-12 h-12 rounded-full border-2 border-gold/30 shadow-md"
@@ -236,7 +288,6 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
                       </div>
                     </div>
 
-                    {/* Shade selector dropdown */}
                     <div className="mb-4">
                       <label className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-2 block">
                         Select Shade
@@ -254,7 +305,6 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
                       </select>
                     </div>
 
-                    {/* Selected shade display */}
                     {lipAnalysis.recommendations[selectedShadeIndex] && (
                       <motion.div
                         key={selectedShadeIndex}
@@ -288,7 +338,6 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
                       </motion.div>
                     )}
 
-                    {/* All shades preview */}
                     <div className="mt-4 flex gap-3 justify-center">
                       {lipAnalysis.recommendations.map((shade, i) => (
                         <button

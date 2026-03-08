@@ -60,10 +60,10 @@ const ScoreRing = ({ score, label }: { score: number; label: string }) => {
   );
 };
 
-// Component for generating & displaying an item image — lazy loaded on user click
+// Component for generating & displaying an item image — auto-generates on mount
 const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: string }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
   const generateImage = async () => {
@@ -86,6 +86,10 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
     }
   };
 
+  useEffect(() => {
+    generateImage();
+  }, [itemName, itemColor]);
+
   return (
     <div className="w-full h-48 rounded-sm border border-gold/20 bg-card/50 flex items-center justify-center overflow-hidden">
       {imageUrl ? (
@@ -95,15 +99,15 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
           <Loader2 size={20} className="text-primary animate-spin" />
           <span className="text-xs text-muted-foreground font-body">Generating...</span>
         </div>
-      ) : (
+      ) : failed ? (
         <button
           onClick={generateImage}
           className="flex flex-col items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
         >
           <ImageIcon size={24} />
-          <span className="text-xs font-body">{failed ? "Retry" : "Generate image"}</span>
+          <span className="text-xs font-body">Retry</span>
         </button>
-      )}
+      ) : null}
     </div>
   );
 };
