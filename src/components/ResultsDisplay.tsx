@@ -62,7 +62,7 @@ const ScoreRing = ({ score, label }: { score: number; label: string }) => {
 // Component for generating & displaying an item image
 const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: string }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
   const generateImage = async () => {
@@ -84,24 +84,24 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
     }
   };
 
+  useEffect(() => {
+    generateImage();
+  }, [itemName, itemColor]);
+
   return (
-    <div className="w-20 h-20 rounded-sm border border-gold/20 bg-card/50 flex items-center justify-center overflow-hidden shrink-0">
+    <div className="w-full h-48 rounded-sm border border-gold/20 bg-card/50 flex items-center justify-center overflow-hidden">
       {imageUrl ? (
-        <img src={imageUrl} alt={itemName} className="w-full h-full object-cover" />
+        <img src={imageUrl} alt={itemName} className="w-full h-full object-contain" />
       ) : loading ? (
-        <Loader2 size={16} className="text-primary animate-spin" />
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 size={20} className="text-primary animate-spin" />
+          <span className="text-xs text-muted-foreground font-body">Generating...</span>
+        </div>
       ) : failed ? (
-        <span className="text-xs text-muted-foreground font-body text-center p-1">N/A</span>
-      ) : (
-        <button
-          onClick={generateImage}
-          className="w-full h-full flex flex-col items-center justify-center gap-1 hover:bg-primary/10 transition-colors"
-          title="Generate image"
-        >
-          <ImageIcon size={14} className="text-muted-foreground" />
-          <span className="text-[10px] text-muted-foreground font-body">Generate</span>
+        <button onClick={generateImage} className="text-xs text-muted-foreground font-body hover:text-primary transition-colors">
+          Retry
         </button>
-      )}
+      ) : null}
     </div>
   );
 };
@@ -116,19 +116,17 @@ const SuggestionCard = ({ icon: Icon, title, items }: {
       <Icon size={18} className="text-primary" />
       <h3 className="font-display text-lg font-semibold text-foreground">{title}</h3>
     </div>
-    <div className="space-y-3">
+    <div className="space-y-4">
       {items.map((item, i) => (
-        <div key={i} className="flex items-start gap-4 p-3 bg-secondary/50 rounded-sm">
+        <div key={i} className="p-4 bg-secondary/50 rounded-sm">
           <ItemImageCard itemName={item.item} itemColor={item.color} />
-          <div className="flex-1">
-            <div className="flex items-start gap-2">
-              <Check size={14} className="text-primary mt-0.5 shrink-0" />
-              <div>
-                <p className="text-sm font-body text-foreground font-medium">
-                  {item.item} <span className="text-muted-foreground">— {item.color}</span>
-                </p>
-                <p className="text-xs text-muted-foreground font-body mt-0.5">{item.reason}</p>
-              </div>
+          <div className="mt-3 flex items-start gap-2">
+            <Check size={14} className="text-primary mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-body text-foreground font-medium">
+                {item.item} <span className="text-muted-foreground">— {item.color}</span>
+              </p>
+              <p className="text-xs text-muted-foreground font-body mt-0.5">{item.reason}</p>
             </div>
           </div>
         </div>
@@ -137,10 +135,10 @@ const SuggestionCard = ({ icon: Icon, title, items }: {
   </div>
 );
 
-// Full outfit model image
+// Full outfit model image - auto generates on mount
 const FullOutfitImage = ({ outfitDescription }: { outfitDescription: string }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
   const generateFullOutfit = async () => {
@@ -162,6 +160,10 @@ const FullOutfitImage = ({ outfitDescription }: { outfitDescription: string }) =
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    generateFullOutfit();
+  }, [outfitDescription]);
 
   return (
     <div className="bg-card border border-gold/10 rounded-sm p-6 mb-6">
@@ -194,20 +196,7 @@ const FullOutfitImage = ({ outfitDescription }: { outfitDescription: string }) =
             Retry
           </button>
         </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center h-48 gap-4">
-          <p className="text-sm font-body text-muted-foreground text-center max-w-md">
-            Generate an AI model wearing your complete suggested outfit
-          </p>
-          <button
-            onClick={generateFullOutfit}
-            className="px-6 py-3 bg-primary text-primary-foreground font-body font-medium tracking-wider uppercase text-xs rounded-sm hover:bg-gold-light transition-colors glow-gold flex items-center gap-2"
-          >
-            <ImageIcon size={14} />
-            Generate Styled Look
-          </button>
-        </div>
-      )}
+      ) : null}
     </div>
   );
 };
