@@ -81,7 +81,10 @@ const Index = () => {
 
       {/* Virtual Try-On - only show after results */}
       {result && outfitDescription && (
-        <VirtualTryOn outfitDescription={outfitDescription} />
+        <VirtualTryOn
+          outfitDescription={outfitDescription}
+          referenceGarmentImage={uploadedImage}
+        />
       )}
 
       {/* Footer */}

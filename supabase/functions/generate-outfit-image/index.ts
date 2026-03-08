@@ -9,27 +9,45 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { prompt, type } = await req.json();
+    const { prompt, type, sourceImageBase64 } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     // Detect if outfit contains feminine items
     const feminineKeywords = ["dress", "gown", "skirt", "blouse", "heels", "clutch", "earrings", "necklace", "camisole", "top", "saree", "lehenga", "jumpsuit", "romper", "tights", "flats", "ballet", "strappy", "pencil skirt", "wide-leg", "palazzo", "dupatta", "hair accessories", "statement necklace"];
     const masculineKeywords = ["chinos", "cargo pants", "joggers", "tie", "pocket square", "cufflinks", "derby shoes", "oxford shoes", "henley", "beanie"];
-    
+
     const promptLower = prompt.toLowerCase();
-    const femScore = feminineKeywords.filter(kw => promptLower.includes(kw)).length;
-    const mascScore = masculineKeywords.filter(kw => promptLower.includes(kw)).length;
+    const femScore = feminineKeywords.filter((kw) => promptLower.includes(kw)).length;
+    const mascScore = masculineKeywords.filter((kw) => promptLower.includes(kw)).length;
     const modelGender = femScore > mascScore ? "female" : mascScore > femScore ? "male" : "female";
 
     let imagePrompt = "";
-    
+    let messageContent: string | Array<{ type: string; text?: string; image_url?: { url: string } }>;
+
     if (type === "full_outfit") {
       imagePrompt = `Generate a high-quality fashion photograph of a ${modelGender} model wearing this complete outfit: ${prompt}. Full body shot, professional studio lighting, clean white background, fashion editorial style, high resolution.`;
+
+      if (sourceImageBase64) {
+        messageContent = [
+          {
+            type: "text",
+            text: `${imagePrompt} Use the uploaded garment image as the exact primary clothing piece. Keep the same neckline, silhouette, straps/sleeves, fabric feel, and color tone as the uploaded garment. Do not replace it with a different top or coat. Only add/adjust bottoms, footwear, and accessories from the recommendation description when needed.`,
+          },
+          {
+            type: "image_url",
+            image_url: { url: sourceImageBase64 },
+          },
+        ];
+      } else {
+        messageContent = imagePrompt;
+      }
     } else if (type === "item") {
       imagePrompt = `Generate a clean product photograph of this fashion item: ${prompt}. Single item on clean white background, professional product photography, high detail, fashion e-commerce style.`;
+      messageContent = imagePrompt;
     } else {
       imagePrompt = prompt;
+      messageContent = imagePrompt;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -40,7 +58,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash-image",
-        messages: [{ role: "user", content: imagePrompt }],
+        messages: [{ role: "user", content: messageContent }],
         modalities: ["image", "text"],
       }),
     });

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Palette, Calendar, Shirt, Footprints, Watch, Lightbulb, Check, Loader2, ImageIcon } from "lucide-react";
+import { Palette, Calendar, Shirt, Footprints, Watch, Lightbulb, Check, Loader2, ImageIcon, RefreshCw } from "lucide-react";
 import MLInsightsPanel from "./MLInsightsPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -107,13 +107,31 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
   );
 };
 
-const SuggestionCard = ({ icon: Icon, title, items }: { 
-  icon: React.ElementType; 
-  title: string; 
-  items: { item: string; color: string; reason: string }[] 
+const SuggestionCard = ({
+  icon: Icon,
+  title,
+  items,
+  selectedIndex,
+  onSelectedIndexChange,
+}: {
+  icon: React.ElementType;
+  title: string;
+  items: { item: string; color: string; reason: string }[];
+  selectedIndex?: number;
+  onSelectedIndexChange?: (index: number) => void;
 }) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const selected = items[selectedIndex];
+  const [internalSelectedIndex, setInternalSelectedIndex] = useState(0);
+  const currentIndex = typeof selectedIndex === "number" ? selectedIndex : internalSelectedIndex;
+  const normalizedIndex = items.length > 0 ? currentIndex % items.length : 0;
+  const selected = items[normalizedIndex];
+
+  const setSelected = (nextIndex: number) => {
+    if (onSelectedIndexChange) {
+      onSelectedIndexChange(nextIndex);
+      return;
+    }
+    setInternalSelectedIndex(nextIndex);
+  };
 
   if (!selected) return null;
 
@@ -126,13 +144,13 @@ const SuggestionCard = ({ icon: Icon, title, items }: {
         </div>
         {items.length > 1 && (
           <select
-            value={selectedIndex}
-            onChange={(e) => setSelectedIndex(Number(e.target.value))}
+            value={normalizedIndex}
+            onChange={(e) => setSelected(Number(e.target.value))}
             className="bg-secondary border border-gold/20 rounded-sm px-3 py-1.5 text-sm font-body text-foreground focus:outline-none focus:border-primary transition-colors cursor-pointer appearance-none pr-8"
             style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 8px center',
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 8px center",
             }}
           >
             {items.map((item, i) => (
@@ -161,7 +179,15 @@ const SuggestionCard = ({ icon: Icon, title, items }: {
 };
 
 // Full outfit model image - auto generates on mount
-const FullOutfitImage = ({ outfitDescription }: { outfitDescription: string }) => {
+const FullOutfitImage = ({
+  outfitDescription,
+  sourceGarmentImage,
+  onRefreshLook,
+}: {
+  outfitDescription: string;
+  sourceGarmentImage: string;
+  onRefreshLook: () => void;
+}) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
@@ -171,11 +197,15 @@ const FullOutfitImage = ({ outfitDescription }: { outfitDescription: string }) =
     setFailed(false);
     try {
       const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
-        body: { prompt: outfitDescription, type: "full_outfit" },
+        body: {
+          prompt: outfitDescription,
+          type: "full_outfit",
+          sourceImageBase64: sourceGarmentImage,
+        },
       });
       if (error || data?.error) {
         setFailed(true);
-        toast.error("Failed to generate outfit image");
+        toast.error(data?.error || "Failed to generate outfit image");
       } else {
         setImageUrl(data.imageUrl);
       }
@@ -188,15 +218,17 @@ const FullOutfitImage = ({ outfitDescription }: { outfitDescription: string }) =
 
   useEffect(() => {
     generateFullOutfit();
-  }, [outfitDescription]);
+  }, [outfitDescription, sourceGarmentImage]);
 
   return (
     <div className="bg-card border border-gold/10 rounded-sm p-6 mb-6">
-      <div className="flex items-center gap-2 mb-4">
-        <ImageIcon size={18} className="text-primary" />
-        <h3 className="font-display text-lg font-semibold text-foreground">Styled Look</h3>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <ImageIcon size={18} className="text-primary" />
+          <h3 className="font-display text-lg font-semibold text-foreground">Styled Look</h3>
+        </div>
       </div>
-      
+
       {imageUrl ? (
         <div className="flex justify-center">
           <img
@@ -222,37 +254,64 @@ const FullOutfitImage = ({ outfitDescription }: { outfitDescription: string }) =
           </button>
         </div>
       ) : null}
+
+      <div className="mt-4 flex justify-end">
+        <button
+          onClick={onRefreshLook}
+          disabled={loading}
+          aria-label="Try another recommendation look"
+          title="Try another recommendation look"
+          className="w-9 h-9 rounded-full border border-gold/30 bg-secondary/50 text-primary flex items-center justify-center hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+        </button>
+      </div>
     </div>
   );
 };
 
 const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsDisplayProps) => {
-  // Build full outfit description for image generation and try-on
+  const [outfitVariant, setOutfitVariant] = useState({ bottom: 0, footwear: 0, accessories: 0 });
+
   useEffect(() => {
-    const topItem = result.detectedItem;
-    const bottom = result.suggestions.bottomWear?.[0];
-    const shoes = result.suggestions.footwear?.[0];
-    const acc = result.suggestions.accessories?.[0];
-    
-    const parts = [topItem];
-    if (bottom) parts.push(`${bottom.color} ${bottom.item}`);
-    if (shoes) parts.push(`${shoes.color} ${shoes.item}`);
-    if (acc) parts.push(`${acc.color} ${acc.item}`);
-    
-    onOutfitDescription(parts.join(", "));
-  }, [result, onOutfitDescription]);
+    setOutfitVariant({ bottom: 0, footwear: 0, accessories: 0 });
+  }, [result]);
+
+  const pickSuggestion = (
+    items: { item: string; color: string; reason: string }[] | undefined,
+    index: number,
+  ) => {
+    if (!items?.length) return undefined;
+    return items[index % items.length];
+  };
+
+  const selectedBottom = pickSuggestion(result.suggestions.bottomWear, outfitVariant.bottom);
+  const selectedFootwear = pickSuggestion(result.suggestions.footwear, outfitVariant.footwear);
+  const selectedAccessory = pickSuggestion(result.suggestions.accessories, outfitVariant.accessories);
 
   const fullOutfitDesc = (() => {
-    const topItem = result.detectedItem;
-    const bottom = result.suggestions.bottomWear?.[0];
-    const shoes = result.suggestions.footwear?.[0];
-    const acc = result.suggestions.accessories?.[0];
-    const parts = [topItem];
-    if (bottom) parts.push(`${bottom.color} ${bottom.item}`);
-    if (shoes) parts.push(`${shoes.color} ${shoes.item}`);
-    if (acc) parts.push(`${acc.color} ${acc.item}`);
+    const parts = [result.detectedItem];
+    if (selectedBottom) parts.push(`${selectedBottom.color} ${selectedBottom.item}`);
+    if (selectedFootwear) parts.push(`${selectedFootwear.color} ${selectedFootwear.item}`);
+    if (selectedAccessory) parts.push(`${selectedAccessory.color} ${selectedAccessory.item}`);
     return parts.join(", ");
   })();
+
+  useEffect(() => {
+    onOutfitDescription(fullOutfitDesc);
+  }, [fullOutfitDesc, onOutfitDescription]);
+
+  const cycleOutfitVariant = () => {
+    const bottomCount = result.suggestions.bottomWear?.length ?? 0;
+    const footwearCount = result.suggestions.footwear?.length ?? 0;
+    const accessoriesCount = result.suggestions.accessories?.length ?? 0;
+
+    setOutfitVariant((prev) => ({
+      bottom: bottomCount > 0 ? (prev.bottom + 1) % bottomCount : 0,
+      footwear: footwearCount > 0 ? (prev.footwear + 1) % footwearCount : 0,
+      accessories: accessoriesCount > 0 ? (prev.accessories + 1) % accessoriesCount : 0,
+    }));
+  };
 
   return (
     <section className="py-24 px-6">
@@ -333,18 +392,40 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
           </div>
 
           {/* Full Outfit AI Image */}
-          <FullOutfitImage outfitDescription={fullOutfitDesc} />
+          <FullOutfitImage
+            outfitDescription={fullOutfitDesc}
+            sourceGarmentImage={uploadedImage}
+            onRefreshLook={cycleOutfitVariant}
+          />
 
           {/* Suggestions with images */}
           <div className="space-y-6 mb-6">
             {result.suggestions.bottomWear?.length > 0 && (
-              <SuggestionCard icon={Shirt} title="Suggested Bottom Wear" items={result.suggestions.bottomWear} />
+              <SuggestionCard
+                icon={Shirt}
+                title="Suggested Bottom Wear"
+                items={result.suggestions.bottomWear}
+                selectedIndex={outfitVariant.bottom}
+                onSelectedIndexChange={(index) => setOutfitVariant((prev) => ({ ...prev, bottom: index }))}
+              />
             )}
             {result.suggestions.footwear?.length > 0 && (
-              <SuggestionCard icon={Footprints} title="Suggested Footwear" items={result.suggestions.footwear} />
+              <SuggestionCard
+                icon={Footprints}
+                title="Suggested Footwear"
+                items={result.suggestions.footwear}
+                selectedIndex={outfitVariant.footwear}
+                onSelectedIndexChange={(index) => setOutfitVariant((prev) => ({ ...prev, footwear: index }))}
+              />
             )}
             {result.suggestions.accessories?.length > 0 && (
-              <SuggestionCard icon={Watch} title="Suggested Accessories" items={result.suggestions.accessories} />
+              <SuggestionCard
+                icon={Watch}
+                title="Suggested Accessories"
+                items={result.suggestions.accessories}
+                selectedIndex={outfitVariant.accessories}
+                onSelectedIndexChange={(index) => setOutfitVariant((prev) => ({ ...prev, accessories: index }))}
+              />
             )}
           </div>
 

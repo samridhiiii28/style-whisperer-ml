@@ -7,9 +7,10 @@ import { analyzeSkinTone, recommendLipShades, type LipAnalysisResult } from "@/m
 
 interface VirtualTryOnProps {
   outfitDescription: string;
+  referenceGarmentImage?: string;
 }
 
-const VirtualTryOn = ({ outfitDescription }: VirtualTryOnProps) => {
+const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOnProps) => {
   const [userImage, setUserImage] = useState<string | null>(null);
   const [tryOnResult, setTryOnResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,7 +68,11 @@ const VirtualTryOn = ({ outfitDescription }: VirtualTryOnProps) => {
 
     try {
       const { data, error } = await supabase.functions.invoke("virtual-tryon", {
-        body: { userImageBase64: userImage, outfitDescription },
+        body: {
+          userImageBase64: userImage,
+          outfitDescription,
+          garmentImageBase64: referenceGarmentImage,
+        },
       });
 
       if (error || data?.error) {
