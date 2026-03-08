@@ -5,11 +5,7 @@ import OutfitForm from "@/components/OutfitForm";
 import HowItWorks from "@/components/HowItWorks";
 import ResultsDisplay, { type AIAnalysisResult } from "@/components/ResultsDisplay";
 import VirtualTryOn from "@/components/VirtualTryOn";
-import {
-  extractDominantColors,
-  classifyOccasion,
-  generateRecommendations,
-} from "@/ml";
+import { runFashionMLAnalysis } from "@/ml";
 
 const Index = () => {
   const [result, setResult] = useState<AIAnalysisResult | null>(null);
