@@ -349,7 +349,7 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
           </div>
 
           {/* Style Analysis */}
-          <div className="bg-card border border-gold/10 rounded-sm p-6">
+          <div className="bg-card border border-gold/10 rounded-sm p-6 mb-6">
             <div className="flex items-center gap-2 mb-4">
               <Lightbulb size={18} className="text-primary" />
               <h3 className="font-display text-lg font-semibold text-foreground">Style Analysis</h3>
@@ -358,6 +358,9 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
               {result.styleAnalysis}
             </p>
           </div>
+
+          {/* ML Models Section */}
+          <MLInsightsPanel result={result} />
         </motion.div>
       </div>
     </section>
