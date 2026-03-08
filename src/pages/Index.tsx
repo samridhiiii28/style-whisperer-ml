@@ -1,5 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 import HeroSection from "@/components/HeroSection";
 import OutfitForm from "@/components/OutfitForm";
 import HowItWorks from "@/components/HowItWorks";
@@ -27,7 +29,6 @@ const Index = () => {
 
     try {
       const analysisResult = await runFashionMLAnalysis(imageBase64, description);
-
       setResult(analysisResult);
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -45,20 +46,34 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background noise-overlay">
       {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 bg-glass border-b border-gold/10">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="font-display text-lg font-semibold">
-            <span className="text-gradient-gold">Fashn</span>
-            <span className="text-foreground">-Match</span>
-          </span>
-          <button
-            onClick={scrollToForm}
-            className="text-xs tracking-wider uppercase text-muted-foreground hover:text-primary font-body transition-colors"
+      <nav className="fixed top-0 w-full z-50 bg-glass-heavy border-b border-gold/5">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <motion.span 
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="font-display text-xl font-bold tracking-tight"
           >
-            Try Now
-          </button>
+            <span className="text-gradient-gold">Fashn</span>
+            <span className="text-foreground/80">-Match</span>
+          </motion.span>
+
+          <div className="flex items-center gap-6">
+            <button
+              onClick={scrollToForm}
+              className="text-xs tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground font-body transition-colors duration-300"
+            >
+              Try Now
+            </button>
+            <button
+              onClick={scrollToForm}
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-gold/15 text-primary text-xs font-body font-medium tracking-wider uppercase hover:bg-primary/20 hover:border-gold/25 transition-all duration-300"
+            >
+              <Sparkles size={12} />
+              Analyze
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -79,7 +94,6 @@ const Index = () => {
         )}
       </div>
 
-      {/* Virtual Try-On - only show after results */}
       {result && outfitDescription && (
         <VirtualTryOn
           outfitDescription={outfitDescription}
@@ -88,14 +102,23 @@ const Index = () => {
       )}
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t border-gold/10">
+      <footer className="relative py-16 px-6">
+        <div className="section-divider absolute top-0 left-0 right-0" />
         <div className="max-w-4xl mx-auto text-center">
-          <p className="font-display text-xl mb-2">
-            <span className="text-gradient-gold">Fashn</span>-Match
+          <p className="font-display text-2xl font-bold mb-3">
+            <span className="text-gradient-gold">Fashn</span>
+            <span className="text-foreground/60">-Match</span>
           </p>
-          <p className="text-xs text-muted-foreground font-body tracking-wider">
-            ML-Powered Fashion Intelligence · K-Means Color Detection · Decision Tree Classification · Random Forest Compatibility
+          <p className="text-xs text-muted-foreground/60 font-body tracking-wider max-w-md mx-auto leading-relaxed">
+            ML-Powered Fashion Intelligence · Color Detection · Style Classification · AI Outfit Generation
           </p>
+          <div className="mt-6 flex justify-center gap-3">
+            {["K-Means", "Decision Tree", "Random Forest", "Neural Networks"].map((tech) => (
+              <span key={tech} className="px-3 py-1 rounded-full border border-gold/8 text-[10px] tracking-wider uppercase text-muted-foreground/40 font-body">
+                {tech}
+              </span>
+            ))}
+          </div>
         </div>
       </footer>
     </div>
