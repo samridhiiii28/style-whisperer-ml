@@ -28,6 +28,7 @@ export { generateRecommendations, type OutfitSuggestion, type OutfitRecommendati
 export { evaluateOutfitCompatibility, type OutfitItem, type CompatibilityResult } from "./randomForestModel";
 export { recordInteraction, getPredictions, resetPreferences, scoreItemForUser, type PreferencePrediction } from "./preferenceLearningModel";
 export { analyzeSkinTone, recommendLipShades, type LipAnalysisResult, type SkinToneResult } from "./lipShadeAnalyzer";
+export { runFashionMLAnalysis, type FashionMLAnalysis } from "./fashionAnalyzer";
 
 // Re-export dataset for transparency
 export { COLOR_DATASET, CLOTHING_DATASET, OCCASION_TRAINING_DATA, SUGGESTION_RULES, COLOR_HARMONY_RULES } from "./dataset";
