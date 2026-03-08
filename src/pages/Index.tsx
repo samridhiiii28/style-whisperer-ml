@@ -1,7 +1,9 @@
 import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Sparkles, LogIn, LogOut, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import HeroSection from "@/components/HeroSection";
 import OutfitForm from "@/components/OutfitForm";
 import HowItWorks from "@/components/HowItWorks";
