@@ -132,7 +132,7 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
     setFailed(false);
 
     try {
-      const nextImageUrl = await enqueueItemImageRequest(() => invokeItemImage());
+      const nextImageUrl = await enqueueImageRequest(() => invokeItemImage());
       if (requestIdRef.current !== requestId) return;
       setImageUrl(nextImageUrl);
     } catch (error) {
