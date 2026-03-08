@@ -189,14 +189,23 @@ function calculateColorScore(
   return { score, analysis };
 }
 
+// ─── Full-body garment detection ─────────────────────────────────────────────
+
+const FULL_BODY_KEYWORDS = [
+  "dress", "gown", "frock", "sundress", "bodycon", "maxi", "mini dress",
+  "jumpsuit", "romper", "overalls", "dungarees", "saree", "sari", "lehenga",
+  "anarkali", "one-piece", "playsuit",
+];
+
+function isFullBody(itemName: string): boolean {
+  const lower = itemName.toLowerCase();
+  return FULL_BODY_KEYWORDS.some(kw => lower.includes(kw));
+}
+
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
  * Generate outfit recommendations based on detected item and colors.
- * 
- * @param detectedItemName - Name of the detected clothing item
- * @param detectedColors - Array of detected color names
- * @param occasion - Predicted occasion (optional, for style analysis)
  */
 export function generateRecommendations(
   detectedItemName: string,
@@ -205,6 +214,7 @@ export function generateRecommendations(
 ): OutfitRecommendation {
   const colorNames = detectedColors.map(c => c.name);
   const rule = findMatchingRule(detectedItemName);
+  const fullBody = isFullBody(detectedItemName);
 
   let bottomWear: OutfitSuggestion[];
   let footwear: OutfitSuggestion[];
@@ -212,7 +222,8 @@ export function generateRecommendations(
 
   if (rule) {
     // Use matched rule and pick best colors
-    bottomWear = rule.bottomWear.map(s => ({
+    // If it's a full-body garment, force empty bottomWear
+    bottomWear = fullBody ? [] : rule.bottomWear.map(s => ({
       item: s.item,
       color: pickBestColor(s.colors, colorNames),
       reason: s.reason,
@@ -228,8 +239,8 @@ export function generateRecommendations(
       reason: s.reason,
     }));
   } else {
-    // Fallback generic suggestions (gender-neutral)
-    bottomWear = [
+    // Fallback generic suggestions
+    bottomWear = fullBody ? [] : [
       { item: "Slim Fit Jeans", color: "Dark Blue", reason: "Versatile jeans work with most clothing items" },
       { item: "Tailored Trousers", color: "Black", reason: "Smart option for a polished appearance" },
       { item: "Chinos", color: "Khaki", reason: "Smart-casual option for a balanced look" },
@@ -243,6 +254,8 @@ export function generateRecommendations(
       { item: "Watch", color: "Silver", reason: "A timeless accessory that completes any outfit" },
       { item: "Crossbody Bag", color: "Black", reason: "Practical and stylish for everyday wear" },
       { item: "Sunglasses", color: "Black", reason: "Adds a cool finishing touch" },
+      { item: "Stud Earrings", color: "Gold", reason: "Minimal earrings for a clean finishing touch" },
+      { item: "Chain Bracelet", color: "Silver", reason: "A simple bracelet adds wrist interest" },
     ];
   }
 
@@ -257,7 +270,10 @@ export function generateRecommendations(
   // Style analysis
   const occasionText = occasion ? ` for ${occasion}` : "";
   const primaryColor = colorNames[0] || "your clothing";
-  const styleAnalysis = `Your ${detectedItemName.toLowerCase()} in ${primaryColor} creates a strong foundation${occasionText}. ` +
+  const garmentNote = fullBody
+    ? ` Since this is a full-body garment, we're focusing on footwear and accessories to complete the look.`
+    : "";
+  const styleAnalysis = `Your ${detectedItemName.toLowerCase()} in ${primaryColor} creates a strong foundation${occasionText}.${garmentNote} ` +
     `The suggested pieces use complementary colors from our harmony dataset to ensure visual cohesion. ` +
     `Mix and match the suggestions to find your preferred combination — all options are scored for color compatibility.`;
 
@@ -265,6 +281,7 @@ export function generateRecommendations(
     bottomWear,
     footwear,
     accessories,
+    isFullBodyGarment: fullBody,
     colorCompatibility,
     styleAnalysis,
   };
