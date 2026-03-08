@@ -52,20 +52,10 @@ const Index = () => {
   };
 
   const handleAnalyze = async (imageBase64: string, description: string) => {
-    // Gate behind auth
-    if (!user) {
-      setShowAuthGate(true);
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }, 100);
-      return;
-    }
-
     setIsLoading(true);
     setResult(null);
     setUploadedImage(imageBase64);
     setOutfitDescription("");
-    setShowAuthGate(false);
 
     try {
       const analysisResult = await runFashionMLAnalysis(imageBase64, description);
