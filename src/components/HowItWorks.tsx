@@ -9,8 +9,8 @@ const steps = [
   },
   {
     icon: Cpu,
-    title: "NLP Feature Extraction",
-    description: "Our ML pipeline extracts color, category, style, and material features using natural language processing.",
+    title: "Smart Feature Extraction",
+    description: "Our system extracts color, category, style, and material features using natural language processing.",
   },
   {
     icon: Palette,
