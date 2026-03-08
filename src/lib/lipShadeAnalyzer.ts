@@ -80,7 +80,6 @@ function getSkinCategory(l: number): string {
 export function analyzeSkinTone(imageBase64: string): Promise<SkinToneResult> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = "anonymous";
     img.onload = () => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");

@@ -9,8 +9,8 @@ const steps = [
   },
   {
     icon: Cpu,
-    title: "NLP Feature Extraction",
-    description: "Our ML pipeline extracts color, category, style, and material features using natural language processing.",
+    title: "Smart Feature Extraction",
+    description: "Our system extracts color, category, style, and material features using natural language processing.",
   },
   {
     icon: Palette,
@@ -32,7 +32,7 @@ const HowItWorks = () => {
           <span className="text-gradient-gold">How</span> It Works
         </h2>
         <p className="text-muted-foreground text-center mb-16 font-body max-w-xl mx-auto">
-          Fashn-Match uses a multi-stage ML pipeline to analyze and recommend outfits.
+          Fashn-Match uses a multi-stage pipeline to analyze and recommend outfits.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

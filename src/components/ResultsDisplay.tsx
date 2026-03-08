@@ -193,7 +193,7 @@ const FullOutfitImage = ({ outfitDescription }: { outfitDescription: string }) =
     <div className="bg-card border border-gold/10 rounded-sm p-6 mb-6">
       <div className="flex items-center gap-2 mb-4">
         <ImageIcon size={18} className="text-primary" />
-        <h3 className="font-display text-lg font-semibold text-foreground">AI Styled Look</h3>
+        <h3 className="font-display text-lg font-semibold text-foreground">Styled Look</h3>
       </div>
       
       {imageUrl ? (
@@ -262,7 +262,7 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
           transition={{ duration: 0.6 }}
         >
           <h2 className="font-display text-4xl font-bold text-center mb-12">
-            <span className="text-gradient-gold">AI Analysis</span> Results
+            <span className="text-gradient-gold">Analysis</span> Results
           </h2>
 
           {/* Detected item + image */}

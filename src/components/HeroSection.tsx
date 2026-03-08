@@ -26,7 +26,7 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
           <p className="font-body text-sm tracking-[0.3em] uppercase text-primary mb-6">
-            ML-Powered Fashion Intelligence
+            Smart Fashion Intelligence
           </p>
           <h1 className="font-display text-6xl md:text-8xl font-bold mb-6 leading-[0.9]">
             <span className="text-gradient-gold">Fashn</span>
@@ -66,7 +66,7 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
           transition={{ duration: 0.8, delay: 0.6 }}
           className="mt-16 flex flex-wrap justify-center gap-3"
         >
-          {["Color Compatibility", "Occasion Prediction", "Style Analysis", "NLP-Powered"].map((tag) => (
+          {["Color Compatibility", "Occasion Prediction", "Style Analysis", "Smart Matching"].map((tag) => (
             <span
               key={tag}
               className="px-4 py-2 border border-gold rounded-full text-xs tracking-wider uppercase text-muted-foreground font-body"

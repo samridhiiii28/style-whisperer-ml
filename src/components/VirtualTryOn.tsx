@@ -146,7 +146,7 @@ const VirtualTryOn = ({ outfitDescription }: VirtualTryOnProps) => {
             {/* Try-on result */}
             <div>
               <p className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-3">
-                AI Try-On Result
+                Try-On Result
               </p>
               <div className="w-full h-80 border border-gold/20 rounded-sm bg-card/50 flex items-center justify-center overflow-hidden">
                 {isLoading ? (
@@ -203,9 +203,9 @@ const VirtualTryOn = ({ outfitDescription }: VirtualTryOnProps) => {
                   <h3 className="font-display text-xl font-semibold text-foreground">
                     Lip Shade Recommendations
                   </h3>
-                  <span className="ml-auto px-2 py-0.5 bg-secondary rounded-full text-[10px] tracking-wider uppercase text-muted-foreground font-body">
-                    ML-Powered
-                  </span>
+                   <span className="ml-auto px-2 py-0.5 bg-secondary rounded-full text-[10px] tracking-wider uppercase text-muted-foreground font-body">
+                     Smart Analysis
+                   </span>
                 </div>
 
                 {lipAnalyzing ? (
