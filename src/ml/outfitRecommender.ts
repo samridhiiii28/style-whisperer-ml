@@ -196,6 +196,18 @@ function calculateColorScore(
   return { score, analysis };
 }
 
+// ─── Suggestion composition helpers ──────────────────────────────────────────
+
+function mergeSuggestions(base: OutfitSuggestion[], extras: OutfitSuggestion[]): OutfitSuggestion[] {
+  const seen = new Set<string>();
+  return [...base, ...extras].filter((entry) => {
+    const key = `${entry.item.toLowerCase()}|${entry.color.toLowerCase()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 // ─── Full-body garment detection ─────────────────────────────────────────────
 
 const FULL_BODY_KEYWORDS = [
