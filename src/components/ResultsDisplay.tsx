@@ -257,14 +257,14 @@ const FullOutfitImage = ({
   const [failed, setFailed] = useState(false);
   const requestIdRef = useRef(0);
 
-  const invokeOutfitImage = async (maxAttempts = 2): Promise<string> => {
+  const invokeOutfitImage = async (maxAttempts = 3): Promise<string> => {
     let lastError = "Failed to generate outfit image";
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
         body: {
-          // Variation tag helps get a fresh generation without changing visible suggestion text
-          prompt: `${outfitDescription} | variation ${refreshKey + 1}`,
+          // Variation tags help force a fresh generation per refresh/attempt
+          prompt: `${outfitDescription} | variation ${refreshKey + 1} option ${attempt}`,
           type: "full_outfit",
           sourceImageBase64: sourceGarmentImage,
         },
