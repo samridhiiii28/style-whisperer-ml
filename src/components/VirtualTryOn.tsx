@@ -96,7 +96,6 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
     }
   }, [userImage, outfitDescription, referenceGarmentImage]);
 
-  // Auto-generate first try-on when user uploads photo
   useEffect(() => {
     if (userImage && tryOnResults.length === 0) {
       handleTryOn();
@@ -106,7 +105,8 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
   const currentResult = tryOnResults[currentResultIndex] ?? null;
 
   return (
-    <section className="py-24 px-6">
+    <section className="relative py-32 px-6">
+      <div className="section-divider absolute top-0 left-0 right-0" />
       <div className="max-w-3xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -114,28 +114,34 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="font-display text-4xl font-bold text-center mb-3">
-            <span className="text-gradient-gold">Virtual</span> Try-On
-          </h2>
-          <p className="text-muted-foreground text-center mb-10 font-body">
-            Upload your photo — see yourself in the outfit and get personalized lip shade recommendations
-          </p>
+          <div className="text-center mb-14">
+            <span className="inline-block font-body text-xs tracking-[0.3em] uppercase text-primary mb-4">Try-On</span>
+            <h2 className="font-display text-5xl md:text-6xl font-bold mb-4">
+              <span className="text-gradient-gold">Virtual</span> Try-On
+            </h2>
+            <p className="text-muted-foreground font-body max-w-lg mx-auto leading-relaxed">
+              Upload your photo to see yourself in the outfit with personalized lip shade recommendations.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* User photo upload */}
             <div>
-              <p className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-3">
+              <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-body mb-3 ml-1">
                 Your Photo
               </p>
               {!userImage ? (
-                <label className="flex flex-col items-center justify-center w-full h-80 border-2 border-dashed border-gold/30 rounded-sm bg-card/50 cursor-pointer hover:border-primary/50 transition-colors group">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="w-14 h-14 rounded-full border border-gold/30 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                      <User size={24} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
+                <label className="flex flex-col items-center justify-center w-full h-80 border-2 border-dashed border-gold/12 rounded-xl bg-card/30 cursor-pointer hover:border-primary/25 hover:bg-card/50 transition-all duration-500 group">
+                  <div className="flex flex-col items-center gap-4">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      className="w-16 h-16 rounded-2xl bg-primary/10 border border-gold/10 flex items-center justify-center group-hover:bg-primary/20 transition-all duration-500"
+                    >
+                      <User size={28} className="text-primary" />
+                    </motion.div>
                     <div className="text-center">
-                      <p className="text-sm font-body text-foreground">Upload your photo</p>
-                      <p className="text-xs font-body text-muted-foreground mt-1">Full body or face photo</p>
+                      <p className="text-sm font-body text-foreground font-medium">Upload your photo</p>
+                      <p className="text-xs font-body text-muted-foreground mt-1.5">Full body or face photo</p>
                     </div>
                   </div>
                   <input
@@ -147,33 +153,42 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
                   />
                 </label>
               ) : (
-                <div className="relative">
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="relative card-elevated rounded-xl overflow-hidden"
+                >
                   <img
                     src={userImage}
                     alt="Your photo"
-                    className="w-full h-80 object-contain rounded-sm border border-gold/20 bg-card"
+                    className="w-full h-80 object-contain bg-card p-2"
                   />
                   <button
                     onClick={removeImage}
-                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-card/90 border border-gold/20 flex items-center justify-center hover:bg-destructive/20 transition-colors"
+                    className="absolute top-3 right-3 w-9 h-9 rounded-lg bg-card/90 border border-gold/15 flex items-center justify-center hover:bg-destructive/20 hover:border-destructive/30 transition-all duration-300"
                   >
                     <X size={16} className="text-foreground" />
                   </button>
-                </div>
+                </motion.div>
               )}
             </div>
 
             {/* Try-on result */}
             <div>
-              <p className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-3">
+              <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-body mb-3 ml-1">
                 Try-On Result
               </p>
-              <div className="w-full h-80 border border-gold/20 rounded-sm bg-card/50 flex items-center justify-center overflow-hidden relative">
+              <div className="w-full h-80 card-elevated rounded-xl flex items-center justify-center overflow-hidden relative">
                 {isLoading ? (
                   <div className="flex flex-col items-center gap-3">
-                    <Loader2 size={32} className="text-primary animate-spin" />
+                    <div className="relative">
+                      <Loader2 size={32} className="text-primary animate-spin" />
+                      <div className="absolute inset-0 animate-ping">
+                        <Loader2 size={32} className="text-primary/20" />
+                      </div>
+                    </div>
                     <p className="text-sm font-body text-muted-foreground">Generating try-on...</p>
-                    <p className="text-xs font-body text-muted-foreground/60">This may take 15-30 seconds</p>
+                    <p className="text-xs font-body text-muted-foreground/50">15-30 seconds</p>
                   </div>
                 ) : currentResult ? (
                   <>
@@ -182,31 +197,29 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
                       alt="Virtual try-on result"
                       className="w-full h-full object-contain"
                     />
-                    {/* Navigation arrows for multiple results */}
                     {tryOnResults.length > 1 && (
                       <>
                         <button
                           onClick={() => setCurrentResultIndex((i) => Math.max(0, i - 1))}
                           disabled={currentResultIndex === 0}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-card/90 border border-gold/20 flex items-center justify-center hover:bg-primary/10 transition-colors disabled:opacity-30"
+                          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-card/90 border border-gold/15 flex items-center justify-center hover:bg-primary/10 transition-all disabled:opacity-30"
                         >
-                          <ChevronLeft size={16} className="text-foreground" />
+                          <ChevronLeft size={14} className="text-foreground" />
                         </button>
                         <button
                           onClick={() => setCurrentResultIndex((i) => Math.min(tryOnResults.length - 1, i + 1))}
                           disabled={currentResultIndex === tryOnResults.length - 1}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-card/90 border border-gold/20 flex items-center justify-center hover:bg-primary/10 transition-colors disabled:opacity-30"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-card/90 border border-gold/15 flex items-center justify-center hover:bg-primary/10 transition-all disabled:opacity-30"
                         >
-                          <ChevronRight size={16} className="text-foreground" />
+                          <ChevronRight size={14} className="text-foreground" />
                         </button>
-                        {/* Dots indicator */}
-                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 px-3 py-1.5 rounded-full bg-card/80 border border-gold/10">
                           {tryOnResults.map((_, i) => (
                             <button
                               key={i}
                               onClick={() => setCurrentResultIndex(i)}
-                              className={`w-2 h-2 rounded-full transition-all ${
-                                i === currentResultIndex ? "bg-primary scale-125" : "bg-muted-foreground/40"
+                              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                i === currentResultIndex ? "bg-primary w-4" : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
                               }`}
                             />
                           ))}
@@ -215,8 +228,8 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
                     )}
                   </>
                 ) : (
-                  <div className="flex flex-col items-center gap-2 text-muted-foreground/50">
-                    <Upload size={24} />
+                  <div className="flex flex-col items-center gap-3 text-muted-foreground/40">
+                    <Upload size={28} />
                     <p className="text-xs font-body">Upload your photo to start</p>
                   </div>
                 )}
@@ -225,21 +238,21 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
           </div>
 
           {/* Outfit description + refresh */}
-          <div className="mt-6 p-4 bg-card border border-gold/10 rounded-sm flex items-center justify-between gap-4">
+          <div className="mt-6 card-elevated rounded-xl p-5 flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-1">Outfit to try on</p>
+              <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-body mb-1.5">Outfit to try on</p>
               <p className="text-sm font-body text-foreground">{outfitDescription}</p>
             </div>
             {userImage && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground font-body">
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-xs text-muted-foreground/60 font-body tabular-nums">
                   {tryOnResults.length}/{maxResults}
                 </span>
                 <button
                   onClick={handleTryOn}
                   disabled={isLoading || tryOnResults.length >= maxResults}
                   title="Generate another try-on look"
-                  className="w-9 h-9 rounded-full border border-gold/30 bg-secondary/50 text-primary flex items-center justify-center hover:bg-primary/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-10 h-10 rounded-xl border border-gold/15 bg-secondary/50 text-primary flex items-center justify-center hover:bg-primary/10 hover:border-gold/25 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <RefreshCw size={14} className={isLoading ? "animate-spin" : ""} />
                 </button>
@@ -253,49 +266,53 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="mt-12"
+              className="mt-10"
             >
-              <div className="bg-card border border-gold/10 rounded-sm p-6">
-                <div className="flex items-center gap-2 mb-6">
-                  <Droplets size={18} className="text-primary" />
-                  <h3 className="font-display text-xl font-semibold text-foreground">
-                    Lip Shade Recommendations
-                  </h3>
-                   <span className="ml-auto px-2 py-0.5 bg-secondary rounded-full text-[10px] tracking-wider uppercase text-muted-foreground font-body">
-                     Smart Analysis
-                   </span>
+              <div className="card-elevated rounded-xl p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Droplets size={16} className="text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-display text-xl font-semibold text-foreground">
+                      Lip Shade Recommendations
+                    </h3>
+                  </div>
+                  <span className="px-3 py-1 bg-secondary rounded-lg text-[10px] tracking-[0.15em] uppercase text-muted-foreground font-body border border-gold/8">
+                    Smart Analysis
+                  </span>
                 </div>
 
                 {lipAnalyzing ? (
-                  <div className="flex items-center gap-3 py-8 justify-center">
+                  <div className="flex items-center gap-3 py-10 justify-center">
                     <Loader2 size={20} className="text-primary animate-spin" />
                     <p className="text-sm font-body text-muted-foreground">Analyzing your skin tone...</p>
                   </div>
                 ) : lipAnalysis ? (
                   <>
-                    <div className="flex items-center gap-4 mb-6 p-4 bg-secondary/50 rounded-sm">
+                    <div className="flex items-center gap-4 mb-6 p-4 bg-secondary/30 rounded-lg border border-gold/8">
                       <div
-                        className="w-12 h-12 rounded-full border-2 border-gold/30 shadow-md"
+                        className="w-14 h-14 rounded-xl border-2 border-gold/20 shadow-md"
                         style={{ backgroundColor: lipAnalysis.skinTone.skinToneHex }}
                       />
                       <div>
                         <p className="text-sm font-body text-foreground font-medium">
                           {lipAnalysis.skinTone.skinCategory} Skin · {lipAnalysis.skinTone.undertone.charAt(0).toUpperCase() + lipAnalysis.skinTone.undertone.slice(1)} Undertone
                         </p>
-                        <p className="text-xs text-muted-foreground font-body">
+                        <p className="text-xs text-muted-foreground font-body mt-0.5">
                           Detected: {lipAnalysis.skinTone.skinToneHex}
                         </p>
                       </div>
                     </div>
 
-                    <div className="mb-4">
-                      <label className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-2 block">
+                    <div className="mb-5">
+                      <label className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-body mb-2.5 block ml-1">
                         Select Shade
                       </label>
                       <select
                         value={selectedShadeIndex}
                         onChange={(e) => setSelectedShadeIndex(Number(e.target.value))}
-                        className="w-full bg-secondary border border-gold/20 rounded-sm px-4 py-2.5 text-sm font-body text-foreground focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                        className="w-full bg-secondary/80 border border-gold/15 rounded-lg px-5 py-3 text-sm font-body text-foreground focus:outline-none focus:border-primary/40 transition-all cursor-pointer"
                       >
                         {lipAnalysis.recommendations.map((shade, i) => (
                           <option key={i} value={i} className="bg-card text-foreground">
@@ -308,22 +325,22 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
                     {lipAnalysis.recommendations[selectedShadeIndex] && (
                       <motion.div
                         key={selectedShadeIndex}
-                        initial={{ opacity: 0, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.97 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.3 }}
-                        className="p-5 bg-secondary/50 rounded-sm"
+                        className="p-5 bg-secondary/30 rounded-lg border border-gold/8"
                       >
                         <div className="flex items-center gap-4 mb-4">
                           <div
-                            className="w-16 h-16 rounded-full border-2 border-gold/30 shadow-lg"
+                            className="w-16 h-16 rounded-xl border-2 border-gold/20 shadow-lg"
                             style={{ backgroundColor: lipAnalysis.recommendations[selectedShadeIndex].hex }}
                           />
                           <div>
-                            <p className="font-display text-lg font-semibold text-foreground">
+                            <p className="font-display text-xl font-semibold text-foreground">
                               {lipAnalysis.recommendations[selectedShadeIndex].name}
                             </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="px-2 py-0.5 bg-primary/20 text-primary rounded-full text-xs font-body">
+                            <div className="flex items-center gap-2 mt-1.5">
+                              <span className="px-2.5 py-0.5 bg-primary/15 text-primary rounded-md text-xs font-body border border-primary/15">
                                 {lipAnalysis.recommendations[selectedShadeIndex].finish}
                               </span>
                               <span className="text-xs text-muted-foreground font-body">
@@ -338,15 +355,15 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
                       </motion.div>
                     )}
 
-                    <div className="mt-4 flex gap-3 justify-center">
+                    <div className="mt-5 flex gap-3 justify-center">
                       {lipAnalysis.recommendations.map((shade, i) => (
                         <button
                           key={i}
                           onClick={() => setSelectedShadeIndex(i)}
-                          className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${
+                          className={`w-11 h-11 rounded-xl border-2 transition-all duration-300 ${
                             i === selectedShadeIndex
-                              ? "border-primary scale-110 shadow-lg"
-                              : "border-gold/20 hover:border-gold/50"
+                              ? "border-primary scale-110 shadow-lg shadow-primary/20"
+                              : "border-gold/15 hover:border-gold/30 hover:scale-105"
                           }`}
                           style={{ backgroundColor: shade.hex }}
                           title={shade.name}

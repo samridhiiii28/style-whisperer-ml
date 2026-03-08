@@ -12,7 +12,7 @@ interface MLInsightsPanelProps {
 const MiniScoreBar = ({ label, score, color }: { label: string; score: number; color: string }) => (
   <div className="flex items-center gap-3">
     <span className="text-xs font-body text-muted-foreground w-28 shrink-0">{label}</span>
-    <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+    <div className="flex-1 h-2 bg-secondary/80 rounded-full overflow-hidden">
       <motion.div
         className="h-full rounded-full"
         style={{ backgroundColor: color }}
@@ -21,7 +21,7 @@ const MiniScoreBar = ({ label, score, color }: { label: string; score: number; c
         transition={{ duration: 0.8, ease: "easeOut" }}
       />
     </div>
-    <span className="text-xs font-body text-foreground w-8 text-right">{score}</span>
+    <span className="text-xs font-body text-foreground w-8 text-right tabular-nums">{score}</span>
   </div>
 );
 
@@ -30,32 +30,23 @@ const MLInsightsPanel = ({ result }: MLInsightsPanelProps) => {
   const [predictions, setPredictions] = useState<PreferencePrediction | null>(null);
   const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
 
-  // Run Random Forest model on mount
   useEffect(() => {
     const items: OutfitItem[] = [];
-
-    // Detected item as top
     items.push({
       name: result.detectedItem,
       color: result.detectedColors[0]?.name || "unknown",
       hex: result.detectedColors[0]?.hex,
       category: "top",
     });
-
-    // First suggestion from each category
     const bottom = result.suggestions.bottomWear?.[0];
     if (bottom) items.push({ name: bottom.item, color: bottom.color, category: "bottom" });
-
     const shoes = result.suggestions.footwear?.[0];
     if (shoes) items.push({ name: shoes.item, color: shoes.color, category: "footwear" });
-
     const acc = result.suggestions.accessories?.[0];
     if (acc) items.push({ name: acc.item, color: acc.color, category: "accessory" });
 
     const compat = evaluateOutfitCompatibility(items);
     setCompatibility(compat);
-
-    // Load user predictions
     setPredictions(getPredictions());
   }, [result]);
 
@@ -63,7 +54,6 @@ const MLInsightsPanel = ({ result }: MLInsightsPanelProps) => {
     const key = `${itemName}-${color}`;
     const newLiked = new Set(likedItems);
     const isLiked = newLiked.has(key);
-    
     if (isLiked) {
       newLiked.delete(key);
       recordInteraction(itemName, color, category, false);
@@ -71,7 +61,6 @@ const MLInsightsPanel = ({ result }: MLInsightsPanelProps) => {
       newLiked.add(key);
       recordInteraction(itemName, color, category, true);
     }
-    
     setLikedItems(newLiked);
     setPredictions(getPredictions());
   };
@@ -82,7 +71,6 @@ const MLInsightsPanel = ({ result }: MLInsightsPanelProps) => {
     setPredictions(getPredictions());
   };
 
-  // Collect all suggestion items for preference learning
   const allItems = [
     ...result.suggestions.bottomWear.map(i => ({ ...i, category: "bottom" })),
     ...result.suggestions.footwear.map(i => ({ ...i, category: "footwear" })),
@@ -97,23 +85,24 @@ const MLInsightsPanel = ({ result }: MLInsightsPanelProps) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-card border border-gold/10 rounded-sm p-6"
+          className="card-elevated rounded-xl p-6"
         >
-          <div className="flex items-center gap-2 mb-1">
-            <TreePine size={18} className="text-primary" />
-            <h3 className="font-display text-lg font-semibold text-foreground">
-              Random Forest Compatibility Model
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+              <TreePine size={16} className="text-primary" />
+            </div>
+            <h3 className="font-display text-xl font-semibold text-foreground">
+              Random Forest Model
             </h3>
           </div>
-          <p className="text-xs text-muted-foreground font-body mb-5">
+          <p className="text-xs text-muted-foreground font-body mb-6 ml-12">
             Ensemble of {7} decision trees evaluating color harmony, style coherence &amp; occasion fit
           </p>
 
-          {/* Overall score */}
-          <div className="flex items-center gap-4 mb-5 p-4 bg-secondary/50 rounded-sm">
+          <div className="flex items-center gap-4 mb-6 p-4 bg-secondary/30 rounded-lg border border-gold/8">
             <div className="relative w-16 h-16">
               <svg width="64" height="64" className="-rotate-90">
-                <circle cx="32" cy="32" r="26" fill="none" stroke="hsl(var(--border))" strokeWidth="4" />
+                <circle cx="32" cy="32" r="26" fill="none" stroke="hsl(var(--border))" strokeWidth="3" />
                 <motion.circle
                   cx="32" cy="32" r="26" fill="none" stroke="hsl(var(--gold))" strokeWidth="4"
                   strokeLinecap="round"
@@ -135,38 +124,35 @@ const MLInsightsPanel = ({ result }: MLInsightsPanelProps) => {
             </div>
           </div>
 
-          {/* Sub-scores */}
-          <div className="space-y-3 mb-5">
+          <div className="space-y-3 mb-6">
             <MiniScoreBar label="Color Harmony" score={compatibility.colorHarmony} color="hsl(var(--gold))" />
             <MiniScoreBar label="Style Coherence" score={compatibility.styleCoherence} color="hsl(var(--champagne))" />
             <MiniScoreBar label="Occasion Fit" score={compatibility.occasionFit} color="hsl(var(--gold-light))" />
           </div>
 
-          {/* Tree votes */}
-          <div className="mb-4">
-            <p className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-2">
+          <div className="mb-5">
+            <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-body mb-3">
               Individual Tree Votes
             </p>
             <div className="flex gap-2">
               {compatibility.treeVotes.map((vote, i) => (
                 <div
                   key={i}
-                  className="flex-1 bg-secondary rounded-sm p-2 text-center"
+                  className="flex-1 bg-secondary/50 rounded-lg p-2.5 text-center border border-gold/5"
                   title={`Tree ${i + 1}: ${vote}`}
                 >
-                  <p className="text-[10px] text-muted-foreground font-body">T{i + 1}</p>
-                  <p className="text-sm font-display font-semibold text-foreground">{vote}</p>
+                  <p className="text-[10px] text-muted-foreground/60 font-body">T{i + 1}</p>
+                  <p className="text-sm font-display font-bold text-foreground">{vote}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Insights */}
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {compatibility.insights.map((insight, i) => (
-              <div key={i} className="flex items-start gap-2">
+              <div key={i} className="flex items-start gap-2.5">
                 <TrendingUp size={12} className="text-primary mt-0.5 shrink-0" />
-                <p className="text-xs text-muted-foreground font-body">{insight}</p>
+                <p className="text-xs text-muted-foreground font-body leading-relaxed">{insight}</p>
               </div>
             ))}
           </div>
@@ -178,19 +164,21 @@ const MLInsightsPanel = ({ result }: MLInsightsPanelProps) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-card border border-gold/10 rounded-sm p-6"
+        className="card-elevated rounded-xl p-6"
       >
         <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <Brain size={18} className="text-primary" />
-            <h3 className="font-display text-lg font-semibold text-foreground">
-              User Preference Learning Model
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Brain size={16} className="text-primary" />
+            </div>
+            <h3 className="font-display text-xl font-semibold text-foreground">
+              Preference Learning
             </h3>
           </div>
           {predictions && predictions.totalInteractions > 0 && (
             <button
               onClick={handleReset}
-              className="text-xs text-muted-foreground hover:text-primary transition-colors font-body flex items-center gap-1"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors font-body flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-primary/5"
               title="Reset learned preferences"
             >
               <RotateCcw size={12} />
@@ -198,13 +186,12 @@ const MLInsightsPanel = ({ result }: MLInsightsPanelProps) => {
             </button>
           )}
         </div>
-        <p className="text-xs text-muted-foreground font-body mb-5">
-          Learns your style from interactions · Adapts recommendations over time · On-device processing
+        <p className="text-xs text-muted-foreground font-body mb-6 ml-12">
+          Learns your style from interactions · Adapts recommendations over time
         </p>
 
-        {/* Like items to train */}
-        <div className="mb-5">
-          <p className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-3">
+        <div className="mb-6">
+          <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-body mb-3">
             Like items to train the model
           </p>
           <div className="flex flex-wrap gap-2">
@@ -219,16 +206,16 @@ const MLInsightsPanel = ({ result }: MLInsightsPanelProps) => {
                 <button
                   key={i}
                   onClick={() => handleLikeItem(item.item, item.color, item.category)}
-                  className={`px-3 py-1.5 rounded-sm text-xs font-body border transition-all duration-200 flex items-center gap-1.5 ${
+                  className={`px-3 py-2 rounded-lg text-xs font-body border transition-all duration-300 flex items-center gap-2 ${
                     isLiked
-                      ? "border-primary bg-primary/20 text-primary"
-                      : "border-gold/20 text-muted-foreground hover:border-gold/40"
+                      ? "border-primary/30 bg-primary/15 text-primary"
+                      : "border-gold/10 bg-secondary/30 text-muted-foreground hover:border-gold/25 hover:bg-secondary/50"
                   }`}
                 >
                   <Heart size={12} className={isLiked ? "fill-primary" : ""} />
                   {item.item}
                   {matchScore !== null && (
-                    <span className="text-[10px] opacity-60">{matchScore}%</span>
+                    <span className="text-[10px] opacity-50 tabular-nums">{matchScore}%</span>
                   )}
                 </button>
               );
@@ -236,15 +223,14 @@ const MLInsightsPanel = ({ result }: MLInsightsPanelProps) => {
           </div>
         </div>
 
-        {/* Learned preferences display */}
         {predictions && predictions.totalInteractions > 0 ? (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-sm">
+          <div className="space-y-5">
+            <div className="flex items-center gap-4 p-4 bg-secondary/30 rounded-lg border border-gold/8">
               <div className="text-center">
-                <p className="font-display text-lg font-bold text-foreground">{predictions.totalInteractions}</p>
-                <p className="text-[10px] text-muted-foreground font-body">Interactions</p>
+                <p className="font-display text-2xl font-bold text-foreground">{predictions.totalInteractions}</p>
+                <p className="text-[10px] text-muted-foreground font-body tracking-wider uppercase">Interactions</p>
               </div>
-              <div className="h-8 w-px bg-border" />
+              <div className="h-10 w-px bg-border" />
               <div>
                 <p className="text-sm font-body text-foreground font-medium">{predictions.personalityType}</p>
                 <p className="text-xs text-muted-foreground font-body">{predictions.adaptationLevel}</p>
@@ -253,13 +239,13 @@ const MLInsightsPanel = ({ result }: MLInsightsPanelProps) => {
 
             {predictions.topColors.length > 0 && (
               <div>
-                <p className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-2">
+                <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-body mb-3">
                   Preferred Colors
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {predictions.topColors.map((c, i) => (
-                    <span key={i} className="px-2 py-1 bg-secondary rounded-sm text-xs font-body text-foreground">
-                      {c.color} <span className="text-muted-foreground">({c.score}%)</span>
+                    <span key={i} className="px-3 py-1.5 bg-secondary/50 rounded-lg text-xs font-body text-foreground border border-gold/8">
+                      {c.color} <span className="text-muted-foreground/60">({c.score}%)</span>
                     </span>
                   ))}
                 </div>
@@ -268,10 +254,10 @@ const MLInsightsPanel = ({ result }: MLInsightsPanelProps) => {
 
             {predictions.preferredStyles.length > 0 && (
               <div>
-                <p className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-2">
+                <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-body mb-3">
                   Style Profile
                 </p>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {predictions.preferredStyles.map((s, i) => (
                     <MiniScoreBar key={i} label={s.trait} score={s.score} color="hsl(var(--primary))" />
                   ))}
@@ -280,11 +266,11 @@ const MLInsightsPanel = ({ result }: MLInsightsPanelProps) => {
             )}
           </div>
         ) : (
-          <div className="text-center py-6">
+          <div className="text-center py-8">
             <p className="text-sm text-muted-foreground font-body">
               Like some items above to start training your style profile
             </p>
-            <p className="text-xs text-muted-foreground/60 font-body mt-1">
+            <p className="text-xs text-muted-foreground/40 font-body mt-1.5">
               The model adapts with each interaction
             </p>
           </div>
