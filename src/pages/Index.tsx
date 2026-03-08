@@ -151,39 +151,15 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Auth gate banner */}
-      {showAuthGate && !user && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="fixed top-16 left-0 right-0 z-40 bg-primary/10 border-b border-gold/20 backdrop-blur-xl"
-        >
-          <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <LogIn size={18} className="text-primary" />
-              </div>
-              <div>
-                <p className="font-display text-sm font-semibold text-foreground">Sign in to analyze</p>
-                <p className="text-xs text-muted-foreground font-body">Create a free account to unlock outfit analysis & save your history</p>
-              </div>
-            </div>
-            <button
-              onClick={() => navigate("/auth")}
-              className="btn-primary-premium px-5 py-2.5 rounded-xl text-primary-foreground font-body font-semibold text-xs tracking-wider uppercase flex-shrink-0"
-            >
-              Sign In / Sign Up
-            </button>
-          </div>
-        </motion.div>
-      )}
-
       <HeroSection onGetStarted={scrollToForm} />
       <HowItWorks />
 
-      <div ref={formRef}>
-        <OutfitForm onAnalyze={handleAnalyze} isLoading={isLoading} />
-      </div>
+      {/* Only show form & results for authenticated users */}
+      {user && (
+        <div ref={formRef}>
+          <OutfitForm onAnalyze={handleAnalyze} isLoading={isLoading} />
+        </div>
+      )}
 
       <div ref={resultsRef}>
         {result && (
