@@ -1,5 +1,8 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Palette, Calendar, Shirt, Footprints, Watch, Lightbulb, Check } from "lucide-react";
+import { Palette, Calendar, Shirt, Footprints, Watch, Lightbulb, Check, Loader2, ImageIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export interface AIAnalysisResult {
   detectedItem: string;
@@ -25,6 +28,7 @@ export interface AIAnalysisResult {
 interface ResultsDisplayProps {
   result: AIAnalysisResult;
   uploadedImage: string;
+  onOutfitDescription: (desc: string) => void;
 }
 
 const ScoreRing = ({ score, label }: { score: number; label: string }) => {
@@ -55,6 +59,53 @@ const ScoreRing = ({ score, label }: { score: number; label: string }) => {
   );
 };
 
+// Component for generating & displaying an item image
+const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: string }) => {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  const generateImage = async () => {
+    setLoading(true);
+    setFailed(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
+        body: { prompt: `${itemColor} ${itemName}`, type: "item" },
+      });
+      if (error || data?.error) {
+        setFailed(true);
+      } else {
+        setImageUrl(data.imageUrl);
+      }
+    } catch {
+      setFailed(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="w-20 h-20 rounded-sm border border-gold/20 bg-card/50 flex items-center justify-center overflow-hidden shrink-0">
+      {imageUrl ? (
+        <img src={imageUrl} alt={itemName} className="w-full h-full object-cover" />
+      ) : loading ? (
+        <Loader2 size={16} className="text-primary animate-spin" />
+      ) : failed ? (
+        <span className="text-xs text-muted-foreground font-body text-center p-1">N/A</span>
+      ) : (
+        <button
+          onClick={generateImage}
+          className="w-full h-full flex flex-col items-center justify-center gap-1 hover:bg-primary/10 transition-colors"
+          title="Generate image"
+        >
+          <ImageIcon size={14} className="text-muted-foreground" />
+          <span className="text-[10px] text-muted-foreground font-body">Generate</span>
+        </button>
+      )}
+    </div>
+  );
+};
+
 const SuggestionCard = ({ icon: Icon, title, items }: { 
   icon: React.ElementType; 
   title: string; 
@@ -67,13 +118,18 @@ const SuggestionCard = ({ icon: Icon, title, items }: {
     </div>
     <div className="space-y-3">
       {items.map((item, i) => (
-        <div key={i} className="flex items-start gap-3 p-3 bg-secondary/50 rounded-sm">
-          <Check size={14} className="text-primary mt-0.5 shrink-0" />
-          <div>
-            <p className="text-sm font-body text-foreground font-medium">
-              {item.item} <span className="text-muted-foreground">— {item.color}</span>
-            </p>
-            <p className="text-xs text-muted-foreground font-body mt-0.5">{item.reason}</p>
+        <div key={i} className="flex items-start gap-4 p-3 bg-secondary/50 rounded-sm">
+          <ItemImageCard itemName={item.item} itemColor={item.color} />
+          <div className="flex-1">
+            <div className="flex items-start gap-2">
+              <Check size={14} className="text-primary mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-body text-foreground font-medium">
+                  {item.item} <span className="text-muted-foreground">— {item.color}</span>
+                </p>
+                <p className="text-xs text-muted-foreground font-body mt-0.5">{item.reason}</p>
+              </div>
+            </div>
           </div>
         </div>
       ))}
@@ -81,7 +137,109 @@ const SuggestionCard = ({ icon: Icon, title, items }: {
   </div>
 );
 
-const ResultsDisplay = ({ result, uploadedImage }: ResultsDisplayProps) => {
+// Full outfit model image
+const FullOutfitImage = ({ outfitDescription }: { outfitDescription: string }) => {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  const generateFullOutfit = async () => {
+    setLoading(true);
+    setFailed(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
+        body: { prompt: outfitDescription, type: "full_outfit" },
+      });
+      if (error || data?.error) {
+        setFailed(true);
+        toast.error("Failed to generate outfit image");
+      } else {
+        setImageUrl(data.imageUrl);
+      }
+    } catch {
+      setFailed(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-card border border-gold/10 rounded-sm p-6 mb-6">
+      <div className="flex items-center gap-2 mb-4">
+        <ImageIcon size={18} className="text-primary" />
+        <h3 className="font-display text-lg font-semibold text-foreground">AI Styled Look</h3>
+      </div>
+      
+      {imageUrl ? (
+        <div className="flex justify-center">
+          <img
+            src={imageUrl}
+            alt="AI generated full outfit"
+            className="max-h-[500px] object-contain rounded-sm border border-gold/20"
+          />
+        </div>
+      ) : loading ? (
+        <div className="flex flex-col items-center justify-center h-64 gap-3">
+          <Loader2 size={32} className="text-primary animate-spin" />
+          <p className="text-sm font-body text-muted-foreground">Generating full outfit on model...</p>
+          <p className="text-xs font-body text-muted-foreground/60">This may take 15-30 seconds</p>
+        </div>
+      ) : failed ? (
+        <div className="flex flex-col items-center justify-center h-32 gap-3">
+          <p className="text-sm font-body text-muted-foreground">Failed to generate. Try again?</p>
+          <button
+            onClick={generateFullOutfit}
+            className="px-4 py-2 border border-gold/30 rounded-sm text-xs text-primary font-body hover:bg-primary/10 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center h-48 gap-4">
+          <p className="text-sm font-body text-muted-foreground text-center max-w-md">
+            Generate an AI model wearing your complete suggested outfit
+          </p>
+          <button
+            onClick={generateFullOutfit}
+            className="px-6 py-3 bg-primary text-primary-foreground font-body font-medium tracking-wider uppercase text-xs rounded-sm hover:bg-gold-light transition-colors glow-gold flex items-center gap-2"
+          >
+            <ImageIcon size={14} />
+            Generate Styled Look
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsDisplayProps) => {
+  // Build full outfit description for image generation and try-on
+  useEffect(() => {
+    const topItem = result.detectedItem;
+    const bottom = result.suggestions.bottomWear?.[0];
+    const shoes = result.suggestions.footwear?.[0];
+    const acc = result.suggestions.accessories?.[0];
+    
+    const parts = [topItem];
+    if (bottom) parts.push(`${bottom.color} ${bottom.item}`);
+    if (shoes) parts.push(`${shoes.color} ${shoes.item}`);
+    if (acc) parts.push(`${acc.color} ${acc.item}`);
+    
+    onOutfitDescription(parts.join(", "));
+  }, [result, onOutfitDescription]);
+
+  const fullOutfitDesc = (() => {
+    const topItem = result.detectedItem;
+    const bottom = result.suggestions.bottomWear?.[0];
+    const shoes = result.suggestions.footwear?.[0];
+    const acc = result.suggestions.accessories?.[0];
+    const parts = [topItem];
+    if (bottom) parts.push(`${bottom.color} ${bottom.item}`);
+    if (shoes) parts.push(`${shoes.color} ${shoes.item}`);
+    if (acc) parts.push(`${acc.color} ${acc.item}`);
+    return parts.join(", ");
+  })();
+
   return (
     <section className="py-24 px-6">
       <div className="max-w-3xl mx-auto">
@@ -160,7 +318,10 @@ const ResultsDisplay = ({ result, uploadedImage }: ResultsDisplayProps) => {
             </p>
           </div>
 
-          {/* Suggestions */}
+          {/* Full Outfit AI Image */}
+          <FullOutfitImage outfitDescription={fullOutfitDesc} />
+
+          {/* Suggestions with images */}
           <div className="space-y-6 mb-6">
             {result.suggestions.bottomWear?.length > 0 && (
               <SuggestionCard icon={Shirt} title="Suggested Bottom Wear" items={result.suggestions.bottomWear} />
