@@ -9,13 +9,36 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { userImageBase64, outfitDescription } = await req.json();
+    const { userImageBase64, outfitDescription, garmentImageBase64 } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     if (!userImageBase64) {
       return new Response(JSON.stringify({ error: "User image is required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const hasGarmentReference = Boolean(garmentImageBase64);
+    const instructions = hasGarmentReference
+      ? `Virtual try-on instructions:\n- Image 1 is the person photo\n- Image 2 is the exact clothing reference from the uploaded garment\nGenerate a realistic full-body image of the person wearing the exact same top/primary garment from image 2 (preserve color, shape, neckline, and fit), styled with this recommendation: ${outfitDescription}. Keep the person's face, body type, skin tone, and hair exactly the same. Only adjust clothing and accessories. Professional fashion photo, full body, clean background.`
+      : `Virtual try-on: Take this person's photo and generate a realistic full-body image of them wearing the following complete outfit: ${outfitDescription}. Keep the person's face, body type, skin tone, and hair exactly the same. Only change their clothing to match the described outfit. Make it look natural and realistic, like a professional fashion photograph. Full body shot, good lighting, clean background.`;
+
+    const content: Array<{ type: string; text?: string; image_url?: { url: string } }> = [
+      {
+        type: "text",
+        text: instructions,
+      },
+      {
+        type: "image_url",
+        image_url: { url: userImageBase64 },
+      },
+    ];
+
+    if (garmentImageBase64) {
+      content.push({
+        type: "image_url",
+        image_url: { url: garmentImageBase64 },
       });
     }
 
@@ -30,18 +53,7 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: [
-              {
-                type: "text",
-                text: `Virtual try-on: Take this person's photo and generate a realistic full-body image of them wearing the following complete outfit: ${outfitDescription}. 
-                
-Keep the person's face, body type, skin tone, and hair exactly the same. Only change their clothing to match the described outfit. Make it look natural and realistic, like a professional fashion photograph. Full body shot, good lighting, clean background.`
-              },
-              {
-                type: "image_url",
-                image_url: { url: userImageBase64 }
-              }
-            ]
+            content,
           }
         ],
         modalities: ["image", "text"],
