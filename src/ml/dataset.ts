@@ -361,7 +361,10 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     accessories: [
       { item: "Statement Necklace", colors: ["Gold", "Silver", "Pearl"], reason: "Bold necklace enhances the neckline of blouses" },
       { item: "Clutch", colors: ["Black", "Gold", "Matching"], reason: "Elegant handbag for a polished feminine outfit" },
-      { item: "Earrings", colors: ["Gold", "Silver", "Crystal"], reason: "Delicate or statement earrings complement blouses" },
+      { item: "Chandelier Earrings", colors: ["Gold", "Silver", "Crystal"], reason: "Chandelier earrings add drama and movement" },
+      { item: "Hoop Earrings", colors: ["Gold", "Silver"], reason: "Classic hoops frame the face beautifully" },
+      { item: "Chain Bracelet", colors: ["Gold", "Silver", "Rose Gold"], reason: "Elegant chain bracelet for a refined wrist accent" },
+      { item: "Tennis Bracelet", colors: ["Silver", "Gold", "Crystal"], reason: "A sparkling tennis bracelet elevates any blouse" },
     ],
   },
   {
