@@ -38,29 +38,28 @@ const ScoreRing = ({ score, label }: { score: number; label: string }) => {
   const color = score >= 75 ? "hsl(var(--gold))" : score >= 50 ? "hsl(var(--champagne))" : "hsl(var(--destructive))";
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col items-center gap-3">
       <div className="relative">
-        <svg width="100" height="100" className="-rotate-90">
-          <circle cx="50" cy="50" r="40" fill="none" stroke="hsl(var(--border))" strokeWidth="4" />
+        <svg width="110" height="110" className="-rotate-90">
+          <circle cx="55" cy="55" r="40" fill="none" stroke="hsl(var(--border))" strokeWidth="3" />
           <motion.circle
-            cx="50" cy="50" r="40" fill="none" stroke={color} strokeWidth="4"
+            cx="55" cy="55" r="40" fill="none" stroke={color} strokeWidth="4"
             strokeLinecap="round"
             strokeDasharray={circumference}
             initial={{ strokeDashoffset: circumference }}
             animate={{ strokeDashoffset: offset }}
-            transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+            transition={{ duration: 1.2, delay: 0.3, ease: "easeOut" }}
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="font-display text-2xl font-bold text-foreground">{score}</span>
+          <span className="font-display text-3xl font-bold text-foreground">{score}</span>
         </div>
       </div>
-      <span className="text-xs tracking-wider uppercase text-muted-foreground font-body">{label}</span>
+      <span className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-body">{label}</span>
     </div>
   );
 };
 
-// Component for generating & displaying an item image — auto-generates on mount
 const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: string }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,7 +90,7 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
   }, [itemName, itemColor]);
 
   return (
-    <div className="w-full h-48 rounded-sm border border-gold/20 bg-card/50 flex items-center justify-center overflow-hidden">
+    <div className="w-full h-48 rounded-lg border border-gold/10 bg-secondary/30 flex items-center justify-center overflow-hidden">
       {imageUrl ? (
         <img src={imageUrl} alt={itemName} className="w-full h-full object-contain" />
       ) : loading ? (
@@ -141,17 +140,23 @@ const SuggestionCard = ({
   if (!selected) return null;
 
   return (
-    <div className="bg-card border border-gold/10 rounded-sm p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Icon size={18} className="text-primary" />
-          <h3 className="font-display text-lg font-semibold text-foreground">{title}</h3>
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="card-elevated rounded-xl p-6"
+    >
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Icon size={16} className="text-primary" />
+          </div>
+          <h3 className="font-display text-xl font-semibold text-foreground">{title}</h3>
         </div>
         {items.length > 1 && (
           <select
             value={normalizedIndex}
             onChange={(e) => setSelected(Number(e.target.value))}
-            className="bg-secondary border border-gold/20 rounded-sm px-3 py-1.5 text-sm font-body text-foreground focus:outline-none focus:border-primary transition-colors cursor-pointer appearance-none pr-8"
+            className="bg-secondary/80 border border-gold/15 rounded-lg px-3 py-2 text-sm font-body text-foreground focus:outline-none focus:border-primary/40 transition-all cursor-pointer appearance-none pr-8"
             style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
               backgroundRepeat: "no-repeat",
@@ -167,23 +172,24 @@ const SuggestionCard = ({
         )}
       </div>
 
-      <div className="p-4 bg-secondary/50 rounded-sm">
+      <div className="p-4 bg-secondary/30 rounded-lg">
         <ItemImageCard key={`${selected.item}-${selected.color}`} itemName={selected.item} itemColor={selected.color} />
-        <div className="mt-3 flex items-start gap-2">
-          <Check size={14} className="text-primary mt-0.5 shrink-0" />
+        <div className="mt-4 flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center mt-0.5 shrink-0">
+            <Check size={12} className="text-primary" />
+          </div>
           <div>
             <p className="text-sm font-body text-foreground font-medium">
               {selected.item} <span className="text-muted-foreground">— {selected.color}</span>
             </p>
-            <p className="text-xs text-muted-foreground font-body mt-0.5">{selected.reason}</p>
+            <p className="text-xs text-muted-foreground font-body mt-1 leading-relaxed">{selected.reason}</p>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-// Full outfit model image - auto generates on mount
 const FullOutfitImage = ({
   outfitDescription,
   sourceGarmentImage,
@@ -226,52 +232,63 @@ const FullOutfitImage = ({
   }, [outfitDescription, sourceGarmentImage]);
 
   return (
-    <div className="bg-card border border-gold/10 rounded-sm p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <ImageIcon size={18} className="text-primary" />
-          <h3 className="font-display text-lg font-semibold text-foreground">Styled Look</h3>
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="card-elevated rounded-xl p-6 mb-6"
+    >
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+            <ImageIcon size={16} className="text-primary" />
+          </div>
+          <div>
+            <h3 className="font-display text-xl font-semibold text-foreground">Styled Look</h3>
+            <p className="text-[11px] text-muted-foreground font-body">AI-generated outfit preview</p>
+          </div>
         </div>
+        <button
+          onClick={onRefreshLook}
+          disabled={loading}
+          aria-label="Try another recommendation look"
+          title="Try another recommendation look"
+          className="w-10 h-10 rounded-xl border border-gold/15 bg-secondary/50 text-primary flex items-center justify-center hover:bg-primary/10 hover:border-gold/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+        </button>
       </div>
 
       {imageUrl ? (
-        <div className="flex justify-center">
+        <div className="flex justify-center rounded-lg overflow-hidden bg-secondary/20">
           <img
             src={imageUrl}
             alt="AI generated full outfit"
-            className="max-h-[500px] object-contain rounded-sm border border-gold/20"
+            className="max-h-[500px] object-contain"
           />
         </div>
       ) : loading ? (
         <div className="flex flex-col items-center justify-center h-64 gap-3">
-          <Loader2 size={32} className="text-primary animate-spin" />
-          <p className="text-sm font-body text-muted-foreground">Generating full outfit on model...</p>
-          <p className="text-xs font-body text-muted-foreground/60">This may take 15-30 seconds</p>
+          <div className="relative">
+            <Loader2 size={32} className="text-primary animate-spin" />
+            <div className="absolute inset-0 animate-ping">
+              <Loader2 size={32} className="text-primary/20" />
+            </div>
+          </div>
+          <p className="text-sm font-body text-muted-foreground">Generating styled look...</p>
+          <p className="text-xs font-body text-muted-foreground/50">This may take 15-30 seconds</p>
         </div>
       ) : failed ? (
         <div className="flex flex-col items-center justify-center h-32 gap-3">
           <p className="text-sm font-body text-muted-foreground">Failed to generate. Try again?</p>
           <button
             onClick={generateFullOutfit}
-            className="px-4 py-2 border border-gold/30 rounded-sm text-xs text-primary font-body hover:bg-primary/10 transition-colors"
+            className="px-5 py-2.5 border border-gold/20 rounded-lg text-xs text-primary font-body font-medium hover:bg-primary/10 transition-all"
           >
             Retry
           </button>
         </div>
       ) : null}
-
-      <div className="mt-4 flex justify-end">
-        <button
-          onClick={onRefreshLook}
-          disabled={loading}
-          aria-label="Try another recommendation look"
-          title="Try another recommendation look"
-          className="w-9 h-9 rounded-full border border-gold/30 bg-secondary/50 text-primary flex items-center justify-center hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-        </button>
-      </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -319,74 +336,101 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
   };
 
   return (
-    <section className="py-24 px-6">
+    <section className="relative py-32 px-6">
+      <div className="section-divider absolute top-0 left-0 right-0" />
       <div className="max-w-3xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="font-display text-4xl font-bold text-center mb-12">
-            <span className="text-gradient-gold">Analysis</span> Results
-          </h2>
+          <div className="text-center mb-14">
+            <span className="inline-block font-body text-xs tracking-[0.3em] uppercase text-primary mb-4">Results</span>
+            <h2 className="font-display text-5xl md:text-6xl font-bold">
+              <span className="text-gradient-gold">Analysis</span> Results
+            </h2>
+          </div>
 
           {/* Detected item + image */}
-          <div className="bg-card border border-gold/10 rounded-sm p-6 mb-6 flex flex-col sm:flex-row gap-6 items-center">
-            <img
-              src={uploadedImage}
-              alt="Analyzed clothing"
-              className="w-32 h-32 object-contain rounded-sm border border-gold/20"
-            />
-            <div>
-              <p className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-1">Detected Item</p>
-              <p className="font-display text-xl font-semibold text-foreground">{result.detectedItem}</p>
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="card-elevated rounded-xl p-6 mb-6 flex flex-col sm:flex-row gap-6 items-center"
+          >
+            <div className="w-36 h-36 rounded-xl overflow-hidden border border-gold/10 bg-secondary/30 shrink-0">
+              <img
+                src={uploadedImage}
+                alt="Analyzed clothing"
+                className="w-full h-full object-contain p-2"
+              />
             </div>
-          </div>
+            <div>
+              <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-body mb-2">Detected Item</p>
+              <p className="font-display text-2xl font-bold text-foreground">{result.detectedItem}</p>
+            </div>
+          </motion.div>
 
           {/* Scores */}
           <div className="grid grid-cols-2 gap-6 mb-8">
-            <div className="bg-card border border-gold/10 rounded-sm p-6 flex flex-col items-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+              className="card-elevated rounded-xl p-8 flex flex-col items-center"
+            >
               <ScoreRing score={result.overallScore} label="Overall Score" />
-            </div>
-            <div className="bg-card border border-gold/10 rounded-sm p-6 flex flex-col items-center">
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+              className="card-elevated rounded-xl p-8 flex flex-col items-center"
+            >
               <ScoreRing score={result.colorCompatibility.score} label="Color Score" />
-            </div>
+            </motion.div>
           </div>
 
           {/* Detected Colors */}
-          <div className="bg-card border border-gold/10 rounded-sm p-6 mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Palette size={18} className="text-primary" />
-              <h3 className="font-display text-lg font-semibold text-foreground">Detected Colors</h3>
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+            className="card-elevated rounded-xl p-6 mb-6"
+          >
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Palette size={16} className="text-primary" />
+              </div>
+              <h3 className="font-display text-xl font-semibold text-foreground">Detected Colors</h3>
             </div>
-            <div className="flex flex-wrap gap-3 mb-4">
+            <div className="flex flex-wrap gap-3 mb-5">
               {result.detectedColors.map((color, i) => (
-                <div key={i} className="flex items-center gap-2">
+                <div key={i} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-secondary/50 border border-gold/8">
                   <div
-                    className="w-8 h-8 rounded-full border border-gold/20 shadow-sm"
+                    className="w-7 h-7 rounded-full border border-gold/15 shadow-sm"
                     style={{ backgroundColor: color.hex }}
                   />
-                  <span className="text-sm font-body text-muted-foreground">{color.name}</span>
+                  <span className="text-sm font-body text-foreground">{color.name}</span>
                 </div>
               ))}
             </div>
             <p className="text-sm text-muted-foreground font-body leading-relaxed">
               {result.colorCompatibility.analysis}
             </p>
-          </div>
+          </motion.div>
 
           {/* Occasion */}
-          <div className="bg-card border border-gold/10 rounded-sm p-6 mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Calendar size={18} className="text-primary" />
-              <h3 className="font-display text-lg font-semibold text-foreground">Occasion Prediction</h3>
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            className="card-elevated rounded-xl p-6 mb-6"
+          >
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Calendar size={16} className="text-primary" />
+              </div>
+              <h3 className="font-display text-xl font-semibold text-foreground">Occasion Prediction</h3>
             </div>
-            <div className="flex flex-wrap items-center gap-3 mb-3">
-              <span className="px-4 py-1.5 bg-primary/20 text-primary rounded-full text-sm font-body font-medium">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <span className="px-4 py-2 bg-primary/15 text-primary rounded-lg text-sm font-body font-medium border border-primary/20">
                 {result.occasion.primary}
               </span>
               {result.occasion.alternatives.map((alt) => (
-                <span key={alt} className="px-3 py-1 border border-gold/20 rounded-full text-xs text-muted-foreground font-body">
+                <span key={alt} className="tag-pill">
                   {alt}
                 </span>
               ))}
@@ -394,7 +438,7 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
             <p className="text-sm text-muted-foreground font-body leading-relaxed">
               {result.occasion.reasoning}
             </p>
-          </div>
+          </motion.div>
 
           {/* Full Outfit AI Image */}
           <FullOutfitImage
@@ -403,12 +447,12 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
             onRefreshLook={cycleOutfitVariant}
           />
 
-          {/* Suggestions with images */}
+          {/* Suggestions */}
           <div className="space-y-6 mb-6">
             {result.suggestions.bottomWear?.length > 0 && (
               <SuggestionCard
                 icon={Shirt}
-                title="Suggested Bottom Wear"
+                title="Bottom Wear"
                 items={result.suggestions.bottomWear}
                 selectedIndex={outfitVariant.bottom}
                 onSelectedIndexChange={(index) => setOutfitVariant((prev) => ({ ...prev, bottom: index }))}
@@ -417,7 +461,7 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
             {result.suggestions.footwear?.length > 0 && (
               <SuggestionCard
                 icon={Footprints}
-                title="Suggested Footwear"
+                title="Footwear"
                 items={result.suggestions.footwear}
                 selectedIndex={outfitVariant.footwear}
                 onSelectedIndexChange={(index) => setOutfitVariant((prev) => ({ ...prev, footwear: index }))}
@@ -426,7 +470,7 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
             {result.suggestions.accessories?.length > 0 && (
               <SuggestionCard
                 icon={Watch}
-                title="Suggested Accessories"
+                title="Accessories"
                 items={result.suggestions.accessories}
                 selectedIndex={outfitVariant.accessories}
                 onSelectedIndexChange={(index) => setOutfitVariant((prev) => ({ ...prev, accessories: index }))}
@@ -435,17 +479,21 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
           </div>
 
           {/* Style Analysis */}
-          <div className="bg-card border border-gold/10 rounded-sm p-6 mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Lightbulb size={18} className="text-primary" />
-              <h3 className="font-display text-lg font-semibold text-foreground">Style Analysis</h3>
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
+            className="card-elevated rounded-xl p-6 mb-6"
+          >
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Lightbulb size={16} className="text-primary" />
+              </div>
+              <h3 className="font-display text-xl font-semibold text-foreground">Style Analysis</h3>
             </div>
             <p className="text-sm text-muted-foreground font-body leading-relaxed">
               {result.styleAnalysis}
             </p>
-          </div>
+          </motion.div>
 
-          {/* ML Models Section */}
           <MLInsightsPanel result={result} />
         </motion.div>
       </div>
