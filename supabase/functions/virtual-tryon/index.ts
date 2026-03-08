@@ -20,9 +20,11 @@ serve(async (req) => {
     }
 
     const hasGarmentReference = Boolean(garmentImageBase64);
+    const facePreservation = `CRITICAL: You MUST preserve the EXACT same face, facial features, facial structure, eyes, nose, mouth, eyebrows, skin tone, skin texture, hair color, hair style, and body shape from the person's photo. The face must be an IDENTICAL match — do NOT generate a new face, do NOT alter any facial features, do NOT change the person's identity. The ONLY thing that should change is the clothing.`;
+    
     const instructions = hasGarmentReference
-      ? `Virtual try-on instructions:\n- Image 1 is the person photo\n- Image 2 is the exact clothing reference from the uploaded garment\nGenerate a realistic full-body image of the person wearing the exact same top/primary garment from image 2 (preserve color, shape, neckline, and fit), styled with this recommendation: ${outfitDescription}. Keep the person's face, body type, skin tone, and hair exactly the same. Only adjust clothing and accessories. Professional fashion photo, full body, clean background.`
-      : `Virtual try-on: Take this person's photo and generate a realistic full-body image of them wearing the following complete outfit: ${outfitDescription}. Keep the person's face, body type, skin tone, and hair exactly the same. Only change their clothing to match the described outfit. Make it look natural and realistic, like a professional fashion photograph. Full body shot, good lighting, clean background.`;
+      ? `Virtual try-on:\n- Image 1 is the person photo (REFERENCE for exact appearance/identity)\n- Image 2 is the clothing reference\n\n${facePreservation}\n\nGenerate a realistic full-body image of THIS EXACT PERSON from image 1 wearing the garment from image 2 (preserve color, shape, neckline, fit), styled with: ${outfitDescription}. The person's face and identity must be pixel-perfect identical to image 1. Professional fashion photo, full body, clean background.`
+      : `Virtual try-on:\n\n${facePreservation}\n\nGenerate a realistic full-body image of THIS EXACT SAME PERSON wearing: ${outfitDescription}. The face, facial features, skin tone, hair, and body type must remain EXACTLY identical to the input photo — only change the clothing. Professional fashion photograph, full body, good lighting, clean background.`;
 
     const content: Array<{ type: string; text?: string; image_url?: { url: string } }> = [
       {
