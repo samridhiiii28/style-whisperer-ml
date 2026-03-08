@@ -213,7 +213,8 @@ const FullOutfitImage = ({
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
         body: {
-          prompt: outfitDescription,
+          // Variation tag helps get a fresh generation without changing visible suggestion text
+          prompt: `${outfitDescription} | variation ${refreshKey + 1}`,
           type: "full_outfit",
           sourceImageBase64: sourceGarmentImage,
         },
@@ -224,6 +225,13 @@ const FullOutfitImage = ({
       }
 
       lastError = data?.error || error?.message || lastError;
+      const isRateLimit = /429|rate limit/i.test(lastError);
+      const isCredits = /402|credits exhausted|payment required/i.test(lastError);
+
+      // Do not hammer the gateway on rate-limit/credits responses
+      if (isRateLimit || isCredits) {
+        throw new Error(lastError);
+      }
 
       if (attempt < maxAttempts) {
         await new Promise((resolve) => setTimeout(resolve, 700 * attempt));
