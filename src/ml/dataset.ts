@@ -325,13 +325,17 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     matchColors: ["neutral", "blue", "brown"],
     bottomWear: [
       { item: "Dress Pants", colors: ["Charcoal", "Navy", "Black"], reason: "Matching formal trousers for a complete suit look" },
-      { item: "Tailored Chinos", colors: ["Beige", "Navy", "Grey"], reason: "Smart-casual bottom that pairs well with blazers" },
+      { item: "Tailored Wide-Leg Trousers", colors: ["Cream", "Grey", "Navy"], reason: "2026 wide-leg tailoring for a modern power silhouette" },
       { item: "Slim Trousers", colors: ["Grey", "Black", "Navy"], reason: "Sleek trousers maintain the tailored silhouette" },
+      { item: "Pinstripe Pants", colors: ["Charcoal", "Navy", "Black"], reason: "Pinstripes are a 2026 power-dressing comeback trend" },
+      { item: "Cropped Dress Pants", colors: ["Beige", "Black", "Navy"], reason: "Cropped trousers for a fresh contemporary blazer look" },
     ],
     footwear: [
       { item: "Oxford Shoes", colors: ["Black", "Brown"], reason: "The definitive formal shoe for blazer outfits" },
       { item: "Derby Shoes", colors: ["Brown", "Black", "Tan"], reason: "Slightly less formal but equally polished" },
+      { item: "Pointed Chelsea Boots", colors: ["Black", "Burgundy", "Brown"], reason: "2026 pointed-toe Chelseas for sharp modern tailoring" },
       { item: "Loafers", colors: ["Burgundy", "Brown", "Black"], reason: "Smart-casual option when going tieless" },
+      { item: "Slingback Heels", colors: ["Black", "Nude", "White"], reason: "Slingbacks trending in 2026 for feminine power dressing" },
     ],
     accessories: [
       { item: "Pocket Square", colors: ["White", "Patterned", "Navy"], reason: "Adds a refined touch to any blazer" },
