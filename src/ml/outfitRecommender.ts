@@ -20,11 +20,11 @@
  */
 
 import {
-  SUGGESTION_RULES,
   COLOR_DATASET,
   COLOR_HARMONY_RULES,
   type SuggestionRule,
 } from "./dataset";
+import { EXPANDED_SUGGESTION_RULES } from "./suggestionRules";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -51,13 +51,19 @@ export interface OutfitRecommendation {
 function findMatchingRule(itemName: string): SuggestionRule | null {
   const lower = itemName.toLowerCase();
   
-  // Try exact keyword match first
-  for (const rule of SUGGESTION_RULES) {
-    if (rule.matchKeywords.some(kw => lower.includes(kw))) {
-      return rule;
+  // Try exact keyword match first (longest keyword first for precision)
+  let bestRule: SuggestionRule | null = null;
+  let bestLen = 0;
+
+  for (const rule of EXPANDED_SUGGESTION_RULES) {
+    for (const kw of rule.matchKeywords) {
+      if (lower.includes(kw) && kw.length > bestLen) {
+        bestRule = rule;
+        bestLen = kw.length;
+      }
     }
   }
-  return null;
+  return bestRule;
 }
 
 /**
