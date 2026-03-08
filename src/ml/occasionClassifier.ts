@@ -215,7 +215,8 @@ export function classifyOccasion(
   const features = { formality, neutralRatio, saturationAvg };
 
   // Decision Tree prediction
-  let primary = traverseTree(DECISION_TREE, features);
+  const modelPrimary = traverseTree(DECISION_TREE, features);
+  let primary = modelPrimary;
 
   // K-NN for alternatives and confidence
   const neighbors = knnVote(features, 5);
@@ -253,8 +254,8 @@ export function classifyOccasion(
     .map(([label]) => label);
 
   // Keep the model's tree output visible as an alternative when description forced a different primary
-  if (hintedOccasion && !alternatives.includes(traverseTree(DECISION_TREE, features)) && traverseTree(DECISION_TREE, features) !== primary) {
-    alternatives.unshift(traverseTree(DECISION_TREE, features));
+  if (hintedOccasion && !alternatives.includes(modelPrimary) && modelPrimary !== primary) {
+    alternatives.unshift(modelPrimary);
   }
 
   // Generate reasoning
