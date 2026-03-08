@@ -453,8 +453,16 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
   const selectedFootwear = pickSuggestion(result.suggestions.footwear, outfitVariant.footwear);
   const selectedAccessory = pickSuggestion(result.suggestions.accessories, outfitVariant.accessories);
 
+  const primaryGarmentColorName = result.detectedColors?.[0]?.name?.trim();
+  const primaryGarmentColorHex = result.detectedColors?.[0]?.hex;
+  const cleanedDetectedItem = stripColorWordsFromItem(result.detectedItem);
+
   const fullOutfitDesc = (() => {
-    const parts = [result.detectedItem];
+    const garmentLead = primaryGarmentColorName
+      ? `${primaryGarmentColorName} ${cleanedDetectedItem}`
+      : cleanedDetectedItem;
+
+    const parts = [garmentLead];
     if (selectedBottom) parts.push(`${selectedBottom.color} ${selectedBottom.item}`);
     if (selectedFootwear) parts.push(`${selectedFootwear.color} ${selectedFootwear.item}`);
     if (selectedAccessory) parts.push(`${selectedAccessory.color} ${selectedAccessory.item}`);
