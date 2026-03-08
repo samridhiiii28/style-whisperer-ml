@@ -6,7 +6,11 @@
  * Curated training datasets for client-side ML models.
  * All data is hand-labeled and used by the Decision Tree, Random Forest,
  * and Recommendation Engine models.
+ * 
+ * Includes 1000+ clothing items via expanded dataset.
  */
+
+import { EXPANDED_CLOTHING_DATASET } from "./expandedClothingDataset";
 
 // ─── COLOR DATASET ──────────────────────────────────────────────────────────
 // 140+ named colors with RGB, HSL, hex, family, warmth, and common pairings
