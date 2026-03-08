@@ -28,6 +28,25 @@ const enqueueImageRequest = <T,>(task: () => Promise<T>): Promise<T> => {
   imageRequestQueue = queuedTask.then(() => undefined, () => undefined);
   return queuedTask;
 };
+
+const createFallbackItemImage = (itemName: string, itemColor: string) => {
+  const label = `${itemColor} ${itemName}`.trim();
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480' viewBox='0 0 640 480'>
+  <defs>
+    <linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'>
+      <stop offset='0%' stop-color='#f6f2ea'/>
+      <stop offset='100%' stop-color='#e8dfd0'/>
+    </linearGradient>
+  </defs>
+  <rect width='640' height='480' fill='url(#bg)'/>
+  <rect x='56' y='56' width='528' height='368' rx='24' fill='#ffffff' stroke='#d7c5a2' stroke-width='2'/>
+  <text x='320' y='220' text-anchor='middle' font-family='system-ui, -apple-system, Segoe UI, Roboto, sans-serif' font-size='28' fill='#5f4a28'>${label}</text>
+  <text x='320' y='260' text-anchor='middle' font-family='system-ui, -apple-system, Segoe UI, Roboto, sans-serif' font-size='16' fill='#7a6a4c'>Preview available while image service is busy</text>
+</svg>`;
+
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+};
+
 export interface AIAnalysisResult {
   detectedItem: string;
   detectedColors: { name: string; hex: string }[];
