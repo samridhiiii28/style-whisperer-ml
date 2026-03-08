@@ -196,6 +196,18 @@ function calculateColorScore(
   return { score, analysis };
 }
 
+// ─── Shuffle utility ─────────────────────────────────────────────────────────
+
+/** Fisher-Yates shuffle — produces a new shuffled array each call. */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 // ─── Suggestion composition helpers ──────────────────────────────────────────
 
 function mergeSuggestions(base: OutfitSuggestion[], extras: OutfitSuggestion[]): OutfitSuggestion[] {
@@ -284,9 +296,9 @@ export function generateRecommendations(
   }
 
   const occasionOverrides = getOccasionSuggestionOverrides(occasion, fullBody);
-  bottomWear = mergeSuggestions(bottomWear, occasionOverrides.bottomWear);
-  footwear = mergeSuggestions(footwear, occasionOverrides.footwear);
-  accessories = mergeSuggestions(accessories, occasionOverrides.accessories);
+  bottomWear = shuffle(mergeSuggestions(bottomWear, occasionOverrides.bottomWear)).slice(0, 7);
+  footwear = shuffle(mergeSuggestions(footwear, occasionOverrides.footwear)).slice(0, 7);
+  accessories = shuffle(mergeSuggestions(accessories, occasionOverrides.accessories)).slice(0, 7);
 
   // Calculate color compatibility
   const suggestedColorNames = [
