@@ -236,7 +236,7 @@ export function extractDominantColors(imageBase64: string, numColors = 4): Promi
         // Use garment pixels if we have enough, otherwise fall back to all non-bg pixels
         const selectedPixels = garmentPixels.length >= 30 ? garmentPixels : allNonBgPixels;
 
-        if (pixels.length < 10) {
+        if (selectedPixels.length < 10) {
           // Not enough non-background pixels
           resolve([{
             name: "Unknown", hex: "#808080", rgb: [128, 128, 128],
@@ -246,11 +246,11 @@ export function extractDominantColors(imageBase64: string, numColors = 4): Promi
         }
 
         // Run K-Means
-        const centroids = kMeansClustering(pixels, Math.min(numColors, 6));
+        const centroids = kMeansClustering(selectedPixels, Math.min(numColors, 6));
 
         // Count pixels per centroid
         const counts = new Array(centroids.length).fill(0);
-        for (const p of pixels) {
+        for (const p of selectedPixels) {
           let minDist = Infinity;
           let minIdx = 0;
           for (let j = 0; j < centroids.length; j++) {
@@ -268,7 +268,7 @@ export function extractDominantColors(imageBase64: string, numColors = 4): Promi
               name: named.name,
               hex: rgbToHex(c.r, c.g, c.b),
               rgb: [c.r, c.g, c.b] as [number, number, number],
-              percentage: Math.round((counts[i] / pixels.length) * 100),
+              percentage: Math.round((counts[i] / selectedPixels.length) * 100),
               family: named.family,
               warmth: named.warmth,
             };
