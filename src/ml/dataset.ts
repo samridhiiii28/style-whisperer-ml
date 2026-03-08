@@ -301,13 +301,17 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     matchColors: ["neutral", "red", "blue", "green"],
     bottomWear: [
       { item: "Joggers", colors: ["Grey", "Black", "Navy"], reason: "Matching athleisure bottom for a coordinated casual look" },
-      { item: "Slim Jeans", colors: ["Black", "Dark Blue"], reason: "Jeans balance the casual hoodie with more structure" },
+      { item: "Straight-Leg Jeans", colors: ["Black", "Dark Blue", "Washed Blue"], reason: "2026 straight-leg jeans add structure to casual hoodies" },
       { item: "Cargo Pants", colors: ["Olive", "Khaki", "Black"], reason: "Streetwear-inspired pairing with utility vibes" },
+      { item: "Track Pants", colors: ["Black", "Grey", "Navy"], reason: "Sporty track pants with side stripes for athleisure trending look" },
+      { item: "Corduroy Pants", colors: ["Brown", "Cream", "Forest Green"], reason: "Corduroy revival in 2026 adds texture and warmth" },
     ],
     footwear: [
-      { item: "Sneakers", colors: ["White", "Black", "Grey"], reason: "Sneakers are the natural footwear match for hoodies" },
+      { item: "Chunky Sneakers", colors: ["White", "Black", "Grey"], reason: "2026 chunky sneakers are the natural match for hoodies" },
       { item: "High-Top Sneakers", colors: ["White", "Black"], reason: "High-tops add streetwear edge to the casual look" },
-      { item: "Boots", colors: ["Black", "Brown"], reason: "Rugged boots add an edgy contrast to soft hoodies" },
+      { item: "Trail Runners", colors: ["Olive", "Grey", "Multi"], reason: "Gorpcore trail runners trending in 2026 outdoor-casual style" },
+      { item: "Puffer Slides", colors: ["Black", "Cream", "Olive"], reason: "2026 puffer slides for an effortless off-duty look" },
+      { item: "Combat Boots", colors: ["Black", "Brown"], reason: "Rugged combat boots add an edgy contrast to soft hoodies" },
     ],
     accessories: [
       { item: "Beanie", colors: ["Black", "Grey", "Navy"], reason: "A beanie completes the cozy casual aesthetic" },
