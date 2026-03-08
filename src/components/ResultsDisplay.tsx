@@ -314,6 +314,8 @@ const FullOutfitImage = ({
           prompt: `${outfitDescription} | variation ${refreshKey + 1} option ${attempt}`,
           type: "full_outfit",
           sourceImageBase64: sourceGarmentImage,
+          sourceGarmentColorName,
+          sourceGarmentColorHex,
         },
       });
 
