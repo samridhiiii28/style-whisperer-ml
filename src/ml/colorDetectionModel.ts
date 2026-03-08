@@ -112,7 +112,27 @@ function kMeansClustering(pixels: Point[], k: number, maxIterations = 15): Point
 
 // ─── Color Matching ─────────────────────────────────────────────────────────
 
+/**
+ * Check if a pixel is essentially black.
+ * True black garments often get misclassified as Navy due to camera noise.
+ */
+function isEssentiallyBlack(r: number, g: number, b: number): boolean {
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const saturation = max === 0 ? 0 : (max - min) / max;
+  // Very dark (all channels < 50) with low saturation = black
+  if (max < 50 && saturation < 0.35) return true;
+  // Dark with extremely low values = black
+  if (r < 35 && g < 35 && b < 45) return true;
+  return false;
+}
+
 function matchToNamedColor(rgb: Point): ColorEntry {
+  // Priority: detect true black before matching
+  if (isEssentiallyBlack(rgb.r, rgb.g, rgb.b)) {
+    return COLOR_DATASET.find(c => c.name === "Black") || COLOR_DATASET[0];
+  }
+
   let bestMatch = COLOR_DATASET[0];
   let bestDist = Infinity;
 

@@ -376,23 +376,12 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
     const footwearLen = result.suggestions.footwear?.length ?? 0;
     const accessoryLen = result.suggestions.accessories?.length ?? 0;
 
-    const rotatable: Array<"bottom" | "footwear" | "accessories"> = [];
-    if (bottomLen > 1) rotatable.push("bottom");
-    if (footwearLen > 1) rotatable.push("footwear");
-    if (accessoryLen > 1) rotatable.push("accessories");
-
-    if (rotatable.length > 0) {
-      const target = rotatable[styledLookRefreshKey % rotatable.length];
-      setOutfitVariant((prev) => {
-        if (target === "bottom") {
-          return { ...prev, bottom: (prev.bottom + 1) % bottomLen };
-        }
-        if (target === "footwear") {
-          return { ...prev, footwear: (prev.footwear + 1) % footwearLen };
-        }
-        return { ...prev, accessories: (prev.accessories + 1) % accessoryLen };
-      });
-    }
+    // Rotate all categories simultaneously to ensure visible change
+    setOutfitVariant((prev) => ({
+      bottom: bottomLen > 1 ? (prev.bottom + 1) % bottomLen : prev.bottom,
+      footwear: footwearLen > 1 ? (prev.footwear + 1) % footwearLen : prev.footwear,
+      accessories: accessoryLen > 1 ? (prev.accessories + 1) % accessoryLen : prev.accessories,
+    }));
 
     setStyledLookRefreshKey((prev) => prev + 1);
   };
