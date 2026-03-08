@@ -276,13 +276,17 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
     matchColors: ["white", "blue", "neutral", "pink"],
     bottomWear: [
       { item: "Tailored Trousers", colors: ["Charcoal", "Navy", "Black"], reason: "Formal trousers create a polished professional look" },
-      { item: "Chinos", colors: ["Beige", "Navy", "Olive"], reason: "Smart-casual bottom that balances formality nicely" },
+      { item: "Relaxed Fit Chinos", colors: ["Beige", "Sage", "Olive"], reason: "2026 relaxed-fit chinos for a modern smart-casual balance" },
+      { item: "Pleated Dress Pants", colors: ["Dark Indigo", "Charcoal", "Cream"], reason: "Pleated pants trending in 2026 for neo-classic styling" },
+      { item: "Wide-Leg Linen Trousers", colors: ["White", "Sand", "Light Blue"], reason: "Quiet luxury linen trousers for warm-weather sophistication" },
       { item: "Slim Fit Jeans", colors: ["Dark Indigo", "Black"], reason: "Dark jeans dress down a shirt while keeping it sharp" },
     ],
     footwear: [
       { item: "Oxford Shoes", colors: ["Brown", "Black", "Tan"], reason: "Classic formal shoes that pair perfectly with shirts" },
-      { item: "Loafers", colors: ["Brown", "Tan", "Burgundy"], reason: "Smart-casual shoes for a relaxed yet polished look" },
+      { item: "Suede Loafers", colors: ["Camel", "Navy", "Burgundy"], reason: "2026 suede loafer trend for a textured smart-casual look" },
       { item: "Chelsea Boots", colors: ["Black", "Brown"], reason: "Versatile boots that work with formal and casual shirts" },
+      { item: "Monk Strap Shoes", colors: ["Brown", "Tan", "Burgundy"], reason: "Monk straps are a 2026 alternative to traditional oxfords" },
+      { item: "Knit Sneakers", colors: ["White", "Grey", "Navy"], reason: "Clean knit sneakers for a tech-smart casual finish" },
     ],
     accessories: [
       { item: "Leather Belt", colors: ["Brown", "Black"], reason: "Match belt color to shoes for a cohesive look" },
