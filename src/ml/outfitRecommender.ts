@@ -243,12 +243,16 @@ export function generateRecommendations(
     bottomWear = fullBody ? [] : [
       { item: "Slim Fit Jeans", color: "Dark Blue", reason: "Versatile jeans work with most clothing items" },
       { item: "Tailored Trousers", color: "Black", reason: "Smart option for a polished appearance" },
-      { item: "Chinos", color: "Khaki", reason: "Smart-casual option for a balanced look" },
+      { item: "Barrel Leg Pants", color: "Cream", reason: "2026 trending barrel-leg for a relaxed modern silhouette" },
+      { item: "Wide-Leg Linen Pants", color: "Sand", reason: "Quiet luxury linen — a top 2026 trend" },
+      { item: "Pleated Chinos", color: "Olive", reason: "Pleated chinos for smart-casual versatility" },
     ];
     footwear = [
-      { item: "White Sneakers", color: "White", reason: "Clean sneakers go with almost everything" },
+      { item: "Chunky Sneakers", color: "White", reason: "2026 chunky sneakers go with almost everything" },
       { item: "Ankle Boots", color: "Black", reason: "Versatile boots for a sharp modern look" },
-      { item: "Loafers", color: "Brown", reason: "Bridges casual and formal effortlessly" },
+      { item: "Platform Loafers", color: "Brown", reason: "Platform loafers trending in 2026 for elevated casual" },
+      { item: "Mary Janes", color: "Black", reason: "Retro Mary Janes — a 2026 feminine revival" },
+      { item: "Retro Running Shoes", color: "Grey", reason: "Retro runner revival for sporty-casual style" },
     ];
     accessories = [
       { item: "Watch", color: "Silver", reason: "A timeless accessory that completes any outfit" },
@@ -256,6 +260,7 @@ export function generateRecommendations(
       { item: "Sunglasses", color: "Black", reason: "Adds a cool finishing touch" },
       { item: "Stud Earrings", color: "Gold", reason: "Minimal earrings for a clean finishing touch" },
       { item: "Chain Bracelet", color: "Silver", reason: "A simple bracelet adds wrist interest" },
+      { item: "Hoop Earrings", color: "Gold", reason: "Classic hoops trending in 2026 for everyday wear" },
     ];
   }
 
