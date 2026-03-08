@@ -8,6 +8,39 @@
 import { extractDominantColors } from "./colorDetectionModel";
 import { classifyOccasion } from "./occasionClassifier";
 import { generateRecommendations } from "./outfitRecommender";
+import { CLOTHING_DATASET } from "./dataset";
+
+/**
+ * Identify the clothing item from user's text description.
+ * Matches against CLOTHING_DATASET keywords, falls back to color-based naming.
+ */
+function identifyItem(description: string, primaryColor: string): string {
+  const lower = description.toLowerCase();
+  
+  // Sort by keyword length (longest first) to match "dress shirt" before "shirt"
+  const sorted = [...CLOTHING_DATASET].sort((a, b) => b.keyword.length - a.keyword.length);
+  
+  for (const entry of sorted) {
+    if (lower.includes(entry.keyword)) {
+      // Capitalize the keyword nicely
+      const name = entry.keyword.charAt(0).toUpperCase() + entry.keyword.slice(1);
+      return `${primaryColor} ${name}`;
+    }
+  }
+  
+  // Common keywords not in the dataset
+  const extraKeywords = [
+    "dress", "gown", "saree", "sari", "lehenga", "jumpsuit", "romper",
+    "bodysuit", "corset", "kimono", "poncho", "cape", "overalls", "dungarees"
+  ];
+  for (const kw of extraKeywords) {
+    if (lower.includes(kw)) {
+      return `${primaryColor} ${kw.charAt(0).toUpperCase() + kw.slice(1)}`;
+    }
+  }
+  
+  return `${primaryColor} clothing item`;
+}
 
 export interface FashionMLAnalysis {
   detectedItem: string;
