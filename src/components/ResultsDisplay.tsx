@@ -195,10 +195,12 @@ const FullOutfitImage = ({
   outfitDescription,
   sourceGarmentImage,
   onRefreshLook,
+  refreshKey,
 }: {
   outfitDescription: string;
   sourceGarmentImage: string;
   onRefreshLook: () => void;
+  refreshKey: number;
 }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -207,6 +209,7 @@ const FullOutfitImage = ({
   const generateFullOutfit = async () => {
     setLoading(true);
     setFailed(false);
+    setImageUrl(null);
     try {
       const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
         body: {
@@ -230,7 +233,7 @@ const FullOutfitImage = ({
 
   useEffect(() => {
     generateFullOutfit();
-  }, [outfitDescription, sourceGarmentImage]);
+  }, [outfitDescription, sourceGarmentImage, refreshKey]);
 
   return (
     <motion.div 
