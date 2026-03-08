@@ -239,7 +239,7 @@ const FullOutfitImage = ({
   const [failed, setFailed] = useState(false);
   const requestIdRef = useRef(0);
 
-  const invokeOutfitImage = async (maxAttempts = 3): Promise<string> => {
+  const invokeOutfitImage = async (maxAttempts = 2): Promise<string> => {
     let lastError = "Failed to generate outfit image";
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -268,7 +268,7 @@ const FullOutfitImage = ({
       }
 
       if (attempt < maxAttempts) {
-        await new Promise((resolve) => setTimeout(resolve, 1200 * attempt));
+        await new Promise((resolve) => setTimeout(resolve, 2200));
       }
     }
 
@@ -279,7 +279,6 @@ const FullOutfitImage = ({
     const requestId = ++requestIdRef.current;
     setLoading(true);
     setFailed(false);
-    setImageUrl(null);
 
     try {
       const nextImageUrl = await invokeOutfitImage();
