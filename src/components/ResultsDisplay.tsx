@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Palette, Calendar, Shirt, Footprints, Watch, Lightbulb, Check, Loader2, ImageIcon, RefreshCw } from "lucide-react";
 import MLInsightsPanel from "./MLInsightsPanel";
@@ -205,12 +205,12 @@ const FullOutfitImage = ({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
+  const requestIdRef = useRef(0);
 
-  const generateFullOutfit = async () => {
-    setLoading(true);
-    setFailed(false);
-    setImageUrl(null);
-    try {
+  const invokeOutfitImage = async (maxAttempts = 3): Promise<string> => {
+    let lastError = "Failed to generate outfit image";
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
         body: {
           prompt: outfitDescription,
@@ -218,21 +218,47 @@ const FullOutfitImage = ({
           sourceImageBase64: sourceGarmentImage,
         },
       });
-      if (error || data?.error) {
-        setFailed(true);
-        toast.error(data?.error || "Failed to generate outfit image");
-      } else {
-        setImageUrl(data.imageUrl);
+
+      if (!error && !data?.error && data?.imageUrl) {
+        return data.imageUrl;
       }
-    } catch {
+
+      lastError = data?.error || error?.message || lastError;
+
+      if (attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, 700 * attempt));
+      }
+    }
+
+    throw new Error(lastError);
+  };
+
+  const generateFullOutfit = async () => {
+    const requestId = ++requestIdRef.current;
+    setLoading(true);
+    setFailed(false);
+    setImageUrl(null);
+
+    try {
+      const nextImageUrl = await invokeOutfitImage();
+      if (requestId !== requestIdRef.current) return;
+      setImageUrl(nextImageUrl);
+    } catch (error) {
+      if (requestId !== requestIdRef.current) return;
       setFailed(true);
+      toast.error(error instanceof Error ? error.message : "Failed to generate outfit image");
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     generateFullOutfit();
+    return () => {
+      requestIdRef.current += 1;
+    };
   }, [outfitDescription, sourceGarmentImage, refreshKey]);
 
   return (

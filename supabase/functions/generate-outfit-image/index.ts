@@ -20,78 +20,106 @@ serve(async (req) => {
     const promptLower = prompt.toLowerCase();
     const femScore = feminineKeywords.filter((kw) => promptLower.includes(kw)).length;
     const mascScore = masculineKeywords.filter((kw) => promptLower.includes(kw)).length;
-    const modelGender = femScore > mascScore ? "female" : mascScore > femScore ? "male" : "female";
+    const hasSourceImage = Boolean(sourceImageBase64);
+    const modelGender = hasSourceImage
+      ? "model"
+      : femScore > mascScore
+        ? "female"
+        : mascScore > femScore
+          ? "male"
+          : "model";
 
-    let imagePrompt = "";
-    let messageContent: string | Array<{ type: string; text?: string; image_url?: { url: string } }>;
+    let attemptContents: Array<string | Array<{ type: string; text?: string; image_url?: { url: string } }>> = [];
 
     if (type === "full_outfit") {
-      imagePrompt = `Generate a high-quality fashion photograph of a ${modelGender} model wearing this complete outfit: ${prompt}. Full body shot, professional studio lighting, clean white background, fashion editorial style, high resolution.`;
+      const basePrompt = `Generate a high-quality fashion photograph of a ${modelGender} wearing this complete outfit concept: ${prompt}. Full body shot, professional studio lighting, clean white background, fashion editorial style, high resolution.`;
 
-      if (sourceImageBase64) {
-        messageContent = [
-          {
-            type: "text",
-            text: `${imagePrompt} Use the uploaded garment image as the exact primary clothing piece. Keep the same neckline, silhouette, straps/sleeves, fabric feel, and color tone as the uploaded garment. Do not replace it with a different top or coat. Only add/adjust bottoms, footwear, and accessories from the recommendation description when needed.`,
-          },
-          {
-            type: "image_url",
-            image_url: { url: sourceImageBase64 },
-          },
+      if (hasSourceImage) {
+        attemptContents = [
+          [
+            {
+              type: "text",
+              text: `${basePrompt} Use the uploaded garment image as a strong visual reference. Keep similar neckline, silhouette, fabric feel, and color family. Complete the look with matching bottoms, footwear, and accessories where needed.`,
+            },
+            {
+              type: "image_url",
+              image_url: { url: sourceImageBase64 },
+            },
+          ],
+          [
+            {
+              type: "text",
+              text: `${basePrompt} Create a cohesive look inspired by the uploaded garment. If text color words conflict with the uploaded image, prioritize the uploaded garment's actual colors and shape.`,
+            },
+            {
+              type: "image_url",
+              image_url: { url: sourceImageBase64 },
+            },
+          ],
+          basePrompt,
         ];
       } else {
-        messageContent = imagePrompt;
+        attemptContents = [basePrompt];
       }
     } else if (type === "item") {
-      imagePrompt = `Generate a clean product photograph of this fashion item: ${prompt}. Single item on clean white background, professional product photography, high detail, fashion e-commerce style.`;
-      messageContent = imagePrompt;
+      attemptContents = [
+        `Generate a clean product photograph of this fashion item: ${prompt}. Single item on clean white background, professional product photography, high detail, fashion e-commerce style.`,
+      ];
     } else {
-      imagePrompt = prompt;
-      messageContent = imagePrompt;
+      attemptContents = [prompt];
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
-        messages: [{ role: "user", content: messageContent }],
-        modalities: ["image", "text"],
-      }),
-    });
+    let lastFailureMessage = "Image generation failed";
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again shortly." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await response.text();
-      console.error("Image gen error:", response.status, t);
-      return new Response(JSON.stringify({ error: "Image generation failed" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    for (const messageContent of attemptContents) {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-image",
+          messages: [{ role: "user", content: messageContent }],
+          modalities: ["image", "text"],
+        }),
       });
-    }
 
-    const data = await response.json();
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    
-    if (!imageUrl) {
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again shortly." }), {
+            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (response.status === 402) {
+          return new Response(JSON.stringify({ error: "AI credits exhausted." }), {
+            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const t = await response.text();
+        lastFailureMessage = "Image generation failed";
+        console.error("Image gen error:", response.status, t);
+        continue;
+      }
+
+      const data = await response.json();
+      const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+      if (imageUrl) {
+        return new Response(JSON.stringify({ imageUrl }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const assistantText = data.choices?.[0]?.message?.content;
+      lastFailureMessage = assistantText
+        ? `Model did not return an image: ${String(assistantText).slice(0, 160)}`
+        : "No image generated";
       console.error("No image in response:", JSON.stringify(data).slice(0, 500));
-      return new Response(JSON.stringify({ error: "No image generated" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
     }
 
-    return new Response(JSON.stringify({ imageUrl }), {
+    return new Response(JSON.stringify({ error: lastFailureMessage }), {
+      status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
