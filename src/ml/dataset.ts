@@ -284,6 +284,8 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
       { item: "Leather Belt", colors: ["Brown", "Black"], reason: "Match belt color to shoes for a cohesive look" },
       { item: "Analog Watch", colors: ["Silver", "Gold", "Brown Leather"], reason: "A quality watch elevates any shirt outfit" },
       { item: "Tie", colors: ["Navy", "Burgundy", "Grey"], reason: "Adds formal polish when the occasion calls for it" },
+      { item: "Cuff Bracelet", colors: ["Silver", "Gold"], reason: "Sleek cuff adds a modern professional accent" },
+      { item: "Pearl Earrings", colors: ["Pearl", "Gold", "Silver"], reason: "Classic earrings for a refined elegant look" },
     ],
   },
   {
