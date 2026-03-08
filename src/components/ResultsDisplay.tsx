@@ -5,10 +5,26 @@ import MLInsightsPanel from "./MLInsightsPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-let itemImageRequestQueue = Promise.resolve();
-const enqueueItemImageRequest = <T,>(task: () => Promise<T>): Promise<T> => {
-  const queuedTask = itemImageRequestQueue.then(task, task);
-  itemImageRequestQueue = queuedTask.then(() => undefined, () => undefined);
+let imageRequestQueue = Promise.resolve();
+let lastImageRequestAt = 0;
+const IMAGE_REQUEST_GAP_MS = 1600;
+
+const enqueueImageRequest = <T,>(task: () => Promise<T>): Promise<T> => {
+  const run = async () => {
+    const elapsed = Date.now() - lastImageRequestAt;
+    if (elapsed < IMAGE_REQUEST_GAP_MS) {
+      await new Promise((resolve) => setTimeout(resolve, IMAGE_REQUEST_GAP_MS - elapsed));
+    }
+
+    try {
+      return await task();
+    } finally {
+      lastImageRequestAt = Date.now();
+    }
+  };
+
+  const queuedTask = imageRequestQueue.then(run, run);
+  imageRequestQueue = queuedTask.then(() => undefined, () => undefined);
   return queuedTask;
 };
 export interface AIAnalysisResult {
@@ -116,7 +132,7 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
     setFailed(false);
 
     try {
-      const nextImageUrl = await enqueueItemImageRequest(() => invokeItemImage());
+      const nextImageUrl = await enqueueImageRequest(() => invokeItemImage());
       if (requestIdRef.current !== requestId) return;
       setImageUrl(nextImageUrl);
     } catch (error) {
@@ -304,7 +320,7 @@ const FullOutfitImage = ({
     setFailed(false);
 
     try {
-      const nextImageUrl = await invokeOutfitImage();
+      const nextImageUrl = await enqueueImageRequest(() => invokeOutfitImage());
       if (requestId !== requestIdRef.current) return;
       setImageUrl(nextImageUrl);
     } catch (error) {
