@@ -26,52 +26,7 @@ const Index = () => {
     setOutfitDescription("");
 
     try {
-      // ──────────────────────────────────────────────────────────
-      // STEP 1: Color Detection (K-Means Clustering — client-side ML)
-      // ──────────────────────────────────────────────────────────
-      const detectedColors = await extractDominantColors(imageBase64, 4);
-      const colors = detectedColors.map(c => ({ name: c.name, hex: c.hex }));
-
-      // Build detected item name from dominant color + generic label
-      const primaryColor = colors[0]?.name || "Unknown";
-      const detectedItem = description
-        ? `${primaryColor} clothing item`
-        : `${primaryColor} clothing item`;
-
-      // ──────────────────────────────────────────────────────────
-      // STEP 2: Occasion Classification (Decision Tree — client-side ML)
-      // ──────────────────────────────────────────────────────────
-      const occasion = classifyOccasion(detectedItem, colors, description);
-
-      // ──────────────────────────────────────────────────────────
-      // STEP 3: Outfit Recommendation (Rule Engine — client-side ML)
-      // ──────────────────────────────────────────────────────────
-      const recommendations = generateRecommendations(
-        detectedItem,
-        colors,
-        occasion.primary
-      );
-
-      // ──────────────────────────────────────────────────────────
-      // STEP 4: Assemble results (API used ONLY for image generation later)
-      // ──────────────────────────────────────────────────────────
-      const analysisResult: AIAnalysisResult = {
-        detectedItem,
-        detectedColors: colors,
-        occasion: {
-          primary: occasion.primary,
-          alternatives: occasion.alternatives,
-          reasoning: occasion.reasoning,
-        },
-        suggestions: {
-          bottomWear: recommendations.bottomWear,
-          footwear: recommendations.footwear,
-          accessories: recommendations.accessories,
-        },
-        colorCompatibility: recommendations.colorCompatibility,
-        styleAnalysis: recommendations.styleAnalysis,
-        overallScore: recommendations.colorCompatibility.score,
-      };
+      const analysisResult = await runFashionMLAnalysis(imageBase64, description);
 
       setResult(analysisResult);
       setTimeout(() => {
