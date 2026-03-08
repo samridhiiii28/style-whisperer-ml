@@ -62,7 +62,7 @@ const ScoreRing = ({ score, label }: { score: number; label: string }) => {
 // Component for generating & displaying an item image
 const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: string }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
   const generateImage = async () => {
@@ -84,24 +84,24 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
     }
   };
 
+  useEffect(() => {
+    generateImage();
+  }, [itemName, itemColor]);
+
   return (
-    <div className="w-20 h-20 rounded-sm border border-gold/20 bg-card/50 flex items-center justify-center overflow-hidden shrink-0">
+    <div className="w-full h-48 rounded-sm border border-gold/20 bg-card/50 flex items-center justify-center overflow-hidden">
       {imageUrl ? (
-        <img src={imageUrl} alt={itemName} className="w-full h-full object-cover" />
+        <img src={imageUrl} alt={itemName} className="w-full h-full object-contain" />
       ) : loading ? (
-        <Loader2 size={16} className="text-primary animate-spin" />
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 size={20} className="text-primary animate-spin" />
+          <span className="text-xs text-muted-foreground font-body">Generating...</span>
+        </div>
       ) : failed ? (
-        <span className="text-xs text-muted-foreground font-body text-center p-1">N/A</span>
-      ) : (
-        <button
-          onClick={generateImage}
-          className="w-full h-full flex flex-col items-center justify-center gap-1 hover:bg-primary/10 transition-colors"
-          title="Generate image"
-        >
-          <ImageIcon size={14} className="text-muted-foreground" />
-          <span className="text-[10px] text-muted-foreground font-body">Generate</span>
+        <button onClick={generateImage} className="text-xs text-muted-foreground font-body hover:text-primary transition-colors">
+          Retry
         </button>
-      )}
+      ) : null}
     </div>
   );
 };
