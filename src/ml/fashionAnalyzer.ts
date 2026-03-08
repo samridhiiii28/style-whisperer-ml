@@ -55,6 +55,7 @@ export interface FashionMLAnalysis {
     footwear: { item: string; color: string; reason: string }[];
     accessories: { item: string; color: string; reason: string }[];
   };
+  isFullBodyGarment: boolean;
   colorCompatibility: {
     score: number;
     analysis: string;
