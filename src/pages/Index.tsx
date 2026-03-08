@@ -1,15 +1,17 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import HeroSection from "@/components/HeroSection";
 import OutfitForm from "@/components/OutfitForm";
 import HowItWorks from "@/components/HowItWorks";
 import ResultsDisplay, { type AIAnalysisResult } from "@/components/ResultsDisplay";
+import VirtualTryOn from "@/components/VirtualTryOn";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [result, setResult] = useState<AIAnalysisResult | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [outfitDescription, setOutfitDescription] = useState("");
   const formRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -21,6 +23,7 @@ const Index = () => {
     setIsLoading(true);
     setResult(null);
     setUploadedImage(imageBase64);
+    setOutfitDescription("");
 
     try {
       const { data, error } = await supabase.functions.invoke("analyze-outfit", {
@@ -52,6 +55,10 @@ const Index = () => {
     }
   };
 
+  const handleOutfitDescription = useCallback((desc: string) => {
+    setOutfitDescription(desc);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navbar */}
@@ -78,8 +85,19 @@ const Index = () => {
       </div>
 
       <div ref={resultsRef}>
-        {result && <ResultsDisplay result={result} uploadedImage={uploadedImage} />}
+        {result && (
+          <ResultsDisplay
+            result={result}
+            uploadedImage={uploadedImage}
+            onOutfitDescription={handleOutfitDescription}
+          />
+        )}
       </div>
+
+      {/* Virtual Try-On - only show after results */}
+      {result && outfitDescription && (
+        <VirtualTryOn outfitDescription={outfitDescription} />
+      )}
 
       {/* Footer */}
       <footer className="py-12 px-6 border-t border-gold/10">
@@ -88,7 +106,7 @@ const Index = () => {
             <span className="text-gradient-gold">Fashn</span>-Match
           </p>
           <p className="text-xs text-muted-foreground font-body tracking-wider">
-            ML-Powered Fashion Intelligence · Color Detection · Occasion Prediction
+            ML-Powered Fashion Intelligence · Color Detection · Occasion Prediction · Virtual Try-On
           </p>
         </div>
       </footer>
