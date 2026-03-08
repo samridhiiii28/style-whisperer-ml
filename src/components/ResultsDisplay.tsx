@@ -135,10 +135,10 @@ const SuggestionCard = ({ icon: Icon, title, items }: {
   </div>
 );
 
-// Full outfit model image
+// Full outfit model image - auto generates on mount
 const FullOutfitImage = ({ outfitDescription }: { outfitDescription: string }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
   const generateFullOutfit = async () => {
@@ -160,6 +160,10 @@ const FullOutfitImage = ({ outfitDescription }: { outfitDescription: string }) =
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    generateFullOutfit();
+  }, [outfitDescription]);
 
   return (
     <div className="bg-card border border-gold/10 rounded-sm p-6 mb-6">
@@ -192,20 +196,7 @@ const FullOutfitImage = ({ outfitDescription }: { outfitDescription: string }) =
             Retry
           </button>
         </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center h-48 gap-4">
-          <p className="text-sm font-body text-muted-foreground text-center max-w-md">
-            Generate an AI model wearing your complete suggested outfit
-          </p>
-          <button
-            onClick={generateFullOutfit}
-            className="px-6 py-3 bg-primary text-primary-foreground font-body font-medium tracking-wider uppercase text-xs rounded-sm hover:bg-gold-light transition-colors glow-gold flex items-center gap-2"
-          >
-            <ImageIcon size={14} />
-            Generate Styled Look
-          </button>
-        </div>
-      )}
+      ) : null}
     </div>
   );
 };
