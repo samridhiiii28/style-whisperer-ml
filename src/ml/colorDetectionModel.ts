@@ -208,16 +208,33 @@ export function extractDominantColors(imageBase64: string, numColors = 4): Promi
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const pixels: Point[] = [];
 
-        // Sample every 2nd pixel for speed, skip backgrounds
-        for (let i = 0; i < imageData.data.length; i += 8) {
-          const r = imageData.data[i];
-          const g = imageData.data[i + 1];
-          const b = imageData.data[i + 2];
-          const a = imageData.data[i + 3];
-          if (!isBackgroundPixel(r, g, b, a)) {
-            pixels.push({ r, g, b });
+        // Focus on center 70% of the image where the garment is most likely
+        const marginX = Math.floor(canvas.width * 0.15);
+        const marginY = Math.floor(canvas.height * 0.10);
+        const endX = canvas.width - marginX;
+        const endY = canvas.height - Math.floor(canvas.height * 0.05);
+
+        // First pass: collect non-background, non-skin pixels (garment pixels)
+        const garmentPixels: Point[] = [];
+        const allNonBgPixels: Point[] = [];
+
+        for (let y = marginY; y < endY; y += 2) {
+          for (let x = marginX; x < endX; x += 2) {
+            const i = (y * canvas.width + x) * 4;
+            const r = imageData.data[i];
+            const g = imageData.data[i + 1];
+            const b = imageData.data[i + 2];
+            const a = imageData.data[i + 3];
+            if (isBackgroundPixel(r, g, b, a)) continue;
+            allNonBgPixels.push({ r, g, b });
+            if (!isSkinTonePixel(r, g, b)) {
+              garmentPixels.push({ r, g, b });
+            }
           }
         }
+
+        // Use garment pixels if we have enough, otherwise fall back to all non-bg pixels
+        const selectedPixels = garmentPixels.length >= 30 ? garmentPixels : allNonBgPixels;
 
         if (pixels.length < 10) {
           // Not enough non-background pixels
