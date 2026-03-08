@@ -13,10 +13,19 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    // Detect if outfit contains feminine items
+    const feminineKeywords = ["dress", "gown", "skirt", "blouse", "heels", "clutch", "earrings", "necklace", "camisole", "top", "saree", "lehenga", "jumpsuit", "romper", "tights", "flats", "ballet", "strappy", "pencil skirt", "wide-leg", "palazzo", "dupatta", "hair accessories", "statement necklace"];
+    const masculineKeywords = ["chinos", "cargo pants", "joggers", "tie", "pocket square", "cufflinks", "derby shoes", "oxford shoes", "henley", "beanie"];
+    
+    const promptLower = prompt.toLowerCase();
+    const femScore = feminineKeywords.filter(kw => promptLower.includes(kw)).length;
+    const mascScore = masculineKeywords.filter(kw => promptLower.includes(kw)).length;
+    const modelGender = femScore > mascScore ? "female" : mascScore > femScore ? "male" : "female";
+
     let imagePrompt = "";
     
     if (type === "full_outfit") {
-      imagePrompt = `Generate a high-quality fashion photograph of a model wearing this complete outfit: ${prompt}. Full body shot, professional studio lighting, clean white background, fashion editorial style, high resolution.`;
+      imagePrompt = `Generate a high-quality fashion photograph of a ${modelGender} model wearing this complete outfit: ${prompt}. Full body shot, professional studio lighting, clean white background, fashion editorial style, high resolution.`;
     } else if (type === "item") {
       imagePrompt = `Generate a clean product photograph of this fashion item: ${prompt}. Single item on clean white background, professional product photography, high detail, fashion e-commerce style.`;
     } else {
