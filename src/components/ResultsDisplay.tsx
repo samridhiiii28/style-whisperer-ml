@@ -125,8 +125,7 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
   useEffect(() => {
     setImageUrl(null);
     void generateImage();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemName, itemColor]);
+  }, [generateImage]);
 
   return (
     <div className="w-full h-48 rounded-lg border border-gold/10 bg-secondary/30 flex items-center justify-center overflow-hidden">
