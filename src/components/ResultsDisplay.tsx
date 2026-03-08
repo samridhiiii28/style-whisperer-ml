@@ -5,6 +5,12 @@ import MLInsightsPanel from "./MLInsightsPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+let itemImageRequestQueue = Promise.resolve();
+const enqueueItemImageRequest = <T,>(task: () => Promise<T>): Promise<T> => {
+  const queuedTask = itemImageRequestQueue.then(task, task);
+  itemImageRequestQueue = queuedTask.then(() => undefined, () => undefined);
+  return queuedTask;
+};
 export interface AIAnalysisResult {
   detectedItem: string;
   detectedColors: { name: string; hex: string }[];
@@ -67,7 +73,7 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
   const [failed, setFailed] = useState(false);
   const requestIdRef = useRef(0);
 
-  const invokeItemImage = useCallback(async (maxAttempts = 2): Promise<string> => {
+  const invokeItemImage = useCallback(async (maxAttempts = 3): Promise<string> => {
     const promptVariants = [
       `${itemColor} ${itemName}`,
       `${itemName} in ${itemColor}`,
@@ -91,8 +97,13 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
       const isRateLimit = status === 429 || /429|rate limit/i.test(lastError);
       const isCredits = status === 402 || /402|credits exhausted|payment required/i.test(lastError);
 
-      if (isRateLimit || isCredits) {
+      if (isCredits) {
         throw new Error(lastError);
+      }
+
+      if (attempt < maxAttempts) {
+        const waitMs = isRateLimit ? 1400 * attempt : 600;
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
       }
     }
 
@@ -105,14 +116,15 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
     setFailed(false);
 
     try {
-      const nextImageUrl = await invokeItemImage();
+      const nextImageUrl = await enqueueItemImageRequest(() => invokeItemImage());
       if (requestIdRef.current !== requestId) return;
       setImageUrl(nextImageUrl);
     } catch (error) {
       if (requestIdRef.current !== requestId) return;
       setFailed(true);
+      setImageUrl("/placeholder.svg");
       const message = error instanceof Error ? error.message : "Failed to generate item image";
-      if (/429|rate limit|credits exhausted|payment required/i.test(message)) {
+      if (/credits exhausted|payment required/i.test(message)) {
         toast.error(message);
       }
     } finally {
