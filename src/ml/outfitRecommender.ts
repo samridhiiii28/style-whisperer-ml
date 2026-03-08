@@ -25,6 +25,7 @@ import {
   type SuggestionRule,
 } from "./dataset";
 import { EXPANDED_SUGGESTION_RULES } from "./suggestionRules";
+import { getOccasionSuggestionOverrides } from "./occasionSuggestionOverrides";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -195,6 +196,18 @@ function calculateColorScore(
   return { score, analysis };
 }
 
+// ─── Suggestion composition helpers ──────────────────────────────────────────
+
+function mergeSuggestions(base: OutfitSuggestion[], extras: OutfitSuggestion[]): OutfitSuggestion[] {
+  const seen = new Set<string>();
+  return [...base, ...extras].filter((entry) => {
+    const key = `${entry.item.toLowerCase()}|${entry.color.toLowerCase()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 // ─── Full-body garment detection ─────────────────────────────────────────────
 
 const FULL_BODY_KEYWORDS = [
@@ -269,6 +282,11 @@ export function generateRecommendations(
       { item: "Hoop Earrings", color: "Gold", reason: "Classic hoops trending in 2026 for everyday wear" },
     ];
   }
+
+  const occasionOverrides = getOccasionSuggestionOverrides(occasion, fullBody);
+  bottomWear = mergeSuggestions(bottomWear, occasionOverrides.bottomWear);
+  footwear = mergeSuggestions(footwear, occasionOverrides.footwear);
+  accessories = mergeSuggestions(accessories, occasionOverrides.accessories);
 
   // Calculate color compatibility
   const suggestedColorNames = [
