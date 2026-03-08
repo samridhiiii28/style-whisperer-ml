@@ -331,8 +331,7 @@ const FullOutfitImage = ({
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
         body: {
-          // Variation tags help force a fresh generation per refresh/attempt
-          prompt: `${outfitDescription} | variation ${refreshKey + 1} option ${attempt}`,
+          prompt: outfitDescription,
           type: "full_outfit",
           sourceImageBase64: sourceGarmentImage,
           sourceGarmentColorName,
@@ -388,7 +387,7 @@ const FullOutfitImage = ({
     return () => {
       requestIdRef.current += 1;
     };
-  }, [outfitDescription, sourceGarmentImage, refreshKey]);
+  }, [outfitDescription, sourceGarmentImage]);
 
   return (
     <motion.div 
@@ -396,7 +395,7 @@ const FullOutfitImage = ({
       animate={{ opacity: 1, y: 0 }}
       className="card-elevated rounded-xl p-6 mb-6"
     >
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center mb-5">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
             <ImageIcon size={16} className="text-primary" />
@@ -406,15 +405,6 @@ const FullOutfitImage = ({
             <p className="text-[11px] text-muted-foreground font-body">AI-generated outfit preview</p>
           </div>
         </div>
-        <button
-          onClick={onRefreshLook}
-          disabled={loading}
-          aria-label="Try another recommendation look"
-          title="Try another recommendation look"
-          className="w-10 h-10 rounded-xl border border-gold/15 bg-secondary/50 text-primary flex items-center justify-center hover:bg-primary/10 hover:border-gold/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-        </button>
       </div>
 
       {imageUrl ? (
