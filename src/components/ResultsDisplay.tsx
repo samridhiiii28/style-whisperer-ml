@@ -110,30 +110,54 @@ const SuggestionCard = ({ icon: Icon, title, items }: {
   icon: React.ElementType; 
   title: string; 
   items: { item: string; color: string; reason: string }[] 
-}) => (
-  <div className="bg-card border border-gold/10 rounded-sm p-6">
-    <div className="flex items-center gap-2 mb-4">
-      <Icon size={18} className="text-primary" />
-      <h3 className="font-display text-lg font-semibold text-foreground">{title}</h3>
-    </div>
-    <div className="space-y-4">
-      {items.map((item, i) => (
-        <div key={i} className="p-4 bg-secondary/50 rounded-sm">
-          <ItemImageCard itemName={item.item} itemColor={item.color} />
-          <div className="mt-3 flex items-start gap-2">
-            <Check size={14} className="text-primary mt-0.5 shrink-0" />
-            <div>
-              <p className="text-sm font-body text-foreground font-medium">
-                {item.item} <span className="text-muted-foreground">— {item.color}</span>
-              </p>
-              <p className="text-xs text-muted-foreground font-body mt-0.5">{item.reason}</p>
-            </div>
+}) => {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const selected = items[selectedIndex];
+
+  if (!selected) return null;
+
+  return (
+    <div className="bg-card border border-gold/10 rounded-sm p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Icon size={18} className="text-primary" />
+          <h3 className="font-display text-lg font-semibold text-foreground">{title}</h3>
+        </div>
+        {items.length > 1 && (
+          <select
+            value={selectedIndex}
+            onChange={(e) => setSelectedIndex(Number(e.target.value))}
+            className="bg-secondary border border-gold/20 rounded-sm px-3 py-1.5 text-sm font-body text-foreground focus:outline-none focus:border-primary transition-colors cursor-pointer appearance-none pr-8"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 8px center',
+            }}
+          >
+            {items.map((item, i) => (
+              <option key={i} value={i} className="bg-card text-foreground">
+                {item.item} — {item.color}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      <div className="p-4 bg-secondary/50 rounded-sm">
+        <ItemImageCard key={`${selected.item}-${selected.color}`} itemName={selected.item} itemColor={selected.color} />
+        <div className="mt-3 flex items-start gap-2">
+          <Check size={14} className="text-primary mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-body text-foreground font-medium">
+              {selected.item} <span className="text-muted-foreground">— {selected.color}</span>
+            </p>
+            <p className="text-xs text-muted-foreground font-body mt-0.5">{selected.reason}</p>
           </div>
         </div>
-      ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Full outfit model image - auto generates on mount
 const FullOutfitImage = ({ outfitDescription }: { outfitDescription: string }) => {
