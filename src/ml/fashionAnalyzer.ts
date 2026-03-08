@@ -35,7 +35,9 @@ export async function runFashionMLAnalysis(imageBase64: string, description: str
   const colors = detectedColors.map((c) => ({ name: c.name, hex: c.hex }));
 
   const primaryColor = colors[0]?.name || "Unknown";
-  const detectedItem = `${primaryColor} clothing item`;
+  
+  // Use the user's description to detect the actual item type
+  const detectedItem = identifyItem(description, primaryColor);
 
   const occasion = classifyOccasion(detectedItem, colors, description);
   const recommendations = generateRecommendations(detectedItem, colors, occasion.primary);
