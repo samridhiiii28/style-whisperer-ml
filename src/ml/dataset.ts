@@ -360,6 +360,61 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
       { item: "Earrings", colors: ["Gold", "Silver", "Crystal"], reason: "Delicate or statement earrings complement blouses" },
     ],
   },
+  {
+    matchKeywords: ["dress", "gown", "frock", "sundress", "bodycon", "maxi", "mini dress"],
+    matchColors: ["neutral", "red", "pink", "purple", "brown", "blue", "green"],
+    bottomWear: [
+      { item: "Sheer Tights", colors: ["Black", "Nude", "Navy"], reason: "Tights add warmth and elegance under dresses" },
+      { item: "Shapewear Shorts", colors: ["Nude", "Black"], reason: "Smooth silhouette underneath fitted dresses" },
+      { item: "Leggings (layered)", colors: ["Black", "Grey"], reason: "Layer under shorter dresses for a casual college look" },
+    ],
+    footwear: [
+      { item: "Strappy Heels", colors: ["Black", "Nude", "Gold"], reason: "Elegant heels that complement any dress beautifully" },
+      { item: "Ankle Boots", colors: ["Black", "Brown", "Tan"], reason: "Trendy boots add an edgy contrast to dresses" },
+      { item: "Block Heels", colors: ["Black", "Nude", "Burgundy"], reason: "Comfortable yet stylish — perfect for all-day wear" },
+      { item: "White Sneakers", colors: ["White", "Off-White"], reason: "Casual-cool pairing for a laid-back college vibe" },
+    ],
+    accessories: [
+      { item: "Statement Earrings", colors: ["Gold", "Silver", "Crystal"], reason: "Earrings draw attention and frame the face beautifully" },
+      { item: "Clutch Bag", colors: ["Black", "Gold", "Matching"], reason: "A sleek clutch keeps the look polished and put-together" },
+      { item: "Layered Necklace", colors: ["Gold", "Silver"], reason: "Delicate layers add charm to dress necklines" },
+      { item: "Crossbody Bag", colors: ["Black", "Brown", "Tan"], reason: "Practical yet stylish for everyday college outings" },
+      { item: "Hair Accessories", colors: ["Black", "Gold", "Matching"], reason: "Clips or headbands add a finishing touch" },
+    ],
+  },
+  {
+    matchKeywords: ["skirt", "pleated skirt", "mini skirt", "midi skirt", "a-line"],
+    matchColors: ["neutral", "pink", "red", "blue", "green"],
+    bottomWear: [
+      { item: "Sheer Tights", colors: ["Black", "Nude"], reason: "Tights pair naturally with skirts for a polished look" },
+      { item: "Knee-High Socks", colors: ["Black", "White", "Grey"], reason: "Preppy socks add a fun collegiate touch to skirts" },
+    ],
+    footwear: [
+      { item: "Loafers", colors: ["Black", "Brown", "Burgundy"], reason: "Classic loafers for a smart preppy pairing" },
+      { item: "Ankle Boots", colors: ["Black", "Brown"], reason: "Boots and skirts create a trendy modern look" },
+      { item: "Ballet Flats", colors: ["Black", "Nude", "Red"], reason: "Feminine and comfortable everyday option" },
+    ],
+    accessories: [
+      { item: "Tote Bag", colors: ["Brown", "Black", "Canvas"], reason: "Spacious and stylish bag for daily use" },
+      { item: "Belt", colors: ["Black", "Brown", "Gold"], reason: "Define the waist for a more structured silhouette" },
+      { item: "Earrings", colors: ["Gold", "Silver", "Pearl"], reason: "Simple earrings complete the feminine look" },
+    ],
+  },
+  {
+    matchKeywords: ["jumpsuit", "romper", "overalls", "dungarees"],
+    matchColors: ["neutral", "blue", "red", "green"],
+    bottomWear: [],
+    footwear: [
+      { item: "Platform Sneakers", colors: ["White", "Black"], reason: "Casual sneakers for an effortless everyday look" },
+      { item: "Wedge Sandals", colors: ["Tan", "Black", "Brown"], reason: "Wedges add height while keeping it comfortable" },
+      { item: "Ankle Boots", colors: ["Black", "Brown"], reason: "Boots give jumpsuits an edgy modern vibe" },
+    ],
+    accessories: [
+      { item: "Statement Belt", colors: ["Black", "Brown", "Gold"], reason: "A belt cinches the waist and adds definition" },
+      { item: "Hoop Earrings", colors: ["Gold", "Silver"], reason: "Hoops add a bold finishing touch" },
+      { item: "Crossbody Bag", colors: ["Black", "Tan", "Brown"], reason: "Hands-free bag for a practical stylish outfit" },
+    ],
+  },
 ];
 
 // ─── COLOR HARMONY RULES (for Random Forest features) ────────────────────────

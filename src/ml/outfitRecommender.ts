@@ -227,20 +227,20 @@ export function generateRecommendations(
       reason: s.reason,
     }));
   } else {
-    // Fallback generic suggestions
+    // Fallback generic suggestions (gender-neutral)
     bottomWear = [
       { item: "Slim Fit Jeans", color: "Dark Blue", reason: "Versatile jeans work with most clothing items" },
+      { item: "Tailored Trousers", color: "Black", reason: "Smart option for a polished appearance" },
       { item: "Chinos", color: "Khaki", reason: "Smart-casual option for a balanced look" },
-      { item: "Trousers", color: "Black", reason: "Formal option for a polished appearance" },
     ];
     footwear = [
       { item: "White Sneakers", color: "White", reason: "Clean sneakers go with almost everything" },
-      { item: "Loafers", color: "Brown", reason: "Versatile shoes that bridge casual and formal" },
-      { item: "Chelsea Boots", color: "Black", reason: "Classic boots for a sharp look" },
+      { item: "Ankle Boots", color: "Black", reason: "Versatile boots for a sharp modern look" },
+      { item: "Loafers", color: "Brown", reason: "Bridges casual and formal effortlessly" },
     ];
     accessories = [
       { item: "Watch", color: "Silver", reason: "A timeless accessory that completes any outfit" },
-      { item: "Belt", color: "Brown", reason: "Practical accessory that ties the look together" },
+      { item: "Crossbody Bag", color: "Black", reason: "Practical and stylish for everyday wear" },
       { item: "Sunglasses", color: "Black", reason: "Adds a cool finishing touch" },
     ];
   }
