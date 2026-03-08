@@ -89,6 +89,7 @@ export async function runFashionMLAnalysis(imageBase64: string, description: str
       footwear: recommendations.footwear,
       accessories: recommendations.accessories,
     },
+    isFullBodyGarment: recommendations.isFullBodyGarment,
     colorCompatibility: recommendations.colorCompatibility,
     styleAnalysis: recommendations.styleAnalysis,
     overallScore: recommendations.colorCompatibility.score,
