@@ -132,6 +132,45 @@ function isBackgroundPixel(r: number, g: number, b: number, a: number): boolean 
   if (a < 200) return true;
   if (r > 240 && g > 240 && b > 240) return true; // white bg
   if (r < 10 && g < 10 && b < 10) return true;     // pure black bg
+  // Light grey backgrounds
+  if (r > 220 && g > 220 && b > 220 && Math.abs(r - g) < 10 && Math.abs(g - b) < 10) return true;
+  return false;
+}
+
+/**
+ * Detect if a pixel is likely a skin tone.
+ * Uses multiple heuristics to cover a wide range of skin colors.
+ */
+function isSkinTonePixel(r: number, g: number, b: number): boolean {
+  // Rule 1: Classic skin-tone detection (works for lighter to medium tones)
+  // Skin typically has R > G > B with specific ratios
+  if (r > 95 && g > 40 && b > 20 &&
+      r > g && r > b &&
+      (r - g) > 15 &&
+      Math.abs(r - g) < 100 &&
+      (r - b) > 15) {
+    // Additional HSV-like check: skin has low saturation relative to brightness
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const saturation = max === 0 ? 0 : (max - min) / max;
+    // Skin tones typically have saturation between 0.1 and 0.6
+    if (saturation > 0.1 && saturation < 0.55) {
+      return true;
+    }
+  }
+  
+  // Rule 2: Detect beige/tan skin tones specifically
+  // These are the ones causing false "Beige" detection
+  if (r > 160 && g > 120 && b > 90 &&
+      r < 240 && g < 200 && b < 170 &&
+      (r - b) > 30 && (r - b) < 100 &&
+      (r - g) > 5 && (r - g) < 60) {
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const saturation = max === 0 ? 0 : (max - min) / max;
+    if (saturation < 0.4) return true;
+  }
+
   return false;
 }
 
