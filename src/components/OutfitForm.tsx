@@ -148,7 +148,7 @@ const OutfitForm = ({ onAnalyze, isLoading }: OutfitFormProps) => {
               className="px-10 py-4 bg-primary text-primary-foreground font-body font-medium tracking-wider uppercase text-sm rounded-sm hover:bg-gold-light transition-colors duration-300 glow-gold disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-3"
             >
               <Sparkles size={16} />
-              {isLoading ? "Analyzing with AI..." : "Analyze & Get Suggestions"}
+              {isLoading ? "Analyzing..." : "Analyze & Get Suggestions"}
             </button>
           </div>
         </motion.div>

@@ -146,7 +146,7 @@ const VirtualTryOn = ({ outfitDescription }: VirtualTryOnProps) => {
             {/* Try-on result */}
             <div>
               <p className="text-xs tracking-wider uppercase text-muted-foreground font-body mb-3">
-                AI Try-On Result
+                Try-On Result
               </p>
               <div className="w-full h-80 border border-gold/20 rounded-sm bg-card/50 flex items-center justify-center overflow-hidden">
                 {isLoading ? (

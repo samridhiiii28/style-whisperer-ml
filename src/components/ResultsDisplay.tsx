@@ -262,7 +262,7 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
           transition={{ duration: 0.6 }}
         >
           <h2 className="font-display text-4xl font-bold text-center mb-12">
-            <span className="text-gradient-gold">AI Analysis</span> Results
+            <span className="text-gradient-gold">Analysis</span> Results
           </h2>
 
           {/* Detected item + image */}

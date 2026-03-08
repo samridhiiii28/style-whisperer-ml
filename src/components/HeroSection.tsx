@@ -26,7 +26,7 @@ const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
           <p className="font-body text-sm tracking-[0.3em] uppercase text-primary mb-6">
-            ML-Powered Fashion Intelligence
+            Smart Fashion Intelligence
           </p>
           <h1 className="font-display text-6xl md:text-8xl font-bold mb-6 leading-[0.9]">
             <span className="text-gradient-gold">Fashn</span>
