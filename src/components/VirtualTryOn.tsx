@@ -203,9 +203,9 @@ const VirtualTryOn = ({ outfitDescription }: VirtualTryOnProps) => {
                   <h3 className="font-display text-xl font-semibold text-foreground">
                     Lip Shade Recommendations
                   </h3>
-                  <span className="ml-auto px-2 py-0.5 bg-secondary rounded-full text-[10px] tracking-wider uppercase text-muted-foreground font-body">
-                    ML-Powered
-                  </span>
+                   <span className="ml-auto px-2 py-0.5 bg-secondary rounded-full text-[10px] tracking-wider uppercase text-muted-foreground font-body">
+                     Smart Analysis
+                   </span>
                 </div>
 
                 {lipAnalyzing ? (

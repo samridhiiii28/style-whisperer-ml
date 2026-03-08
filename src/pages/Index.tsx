@@ -106,7 +106,7 @@ const Index = () => {
             <span className="text-gradient-gold">Fashn</span>-Match
           </p>
           <p className="text-xs text-muted-foreground font-body tracking-wider">
-            ML-Powered Fashion Intelligence · Color Detection · Occasion Prediction · Virtual Try-On
+            Fashion Intelligence · Color Detection · Occasion Prediction · Virtual Try-On
           </p>
         </div>
       </footer>
