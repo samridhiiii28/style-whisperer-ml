@@ -109,17 +109,11 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
   const [failed, setFailed] = useState(false);
   const requestIdRef = useRef(0);
 
-  const invokeItemImage = useCallback(async (maxAttempts = 3): Promise<string> => {
-    const promptVariants = [
-      `${itemColor} ${itemName}`,
-      `${itemName} in ${itemColor}`,
-      itemName,
-    ];
-
+  const invokeItemImage = useCallback(async (maxAttempts = 1): Promise<string> => {
+    const prompt = `${itemColor} ${itemName}`.trim();
     let lastError = "Failed to generate item image";
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const prompt = promptVariants[Math.min(attempt - 1, promptVariants.length - 1)];
       const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
         body: { prompt, type: "item" },
       });
@@ -133,13 +127,12 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
       const isRateLimit = status === 429 || /429|rate limit/i.test(lastError);
       const isCredits = status === 402 || /402|credits exhausted|payment required/i.test(lastError);
 
-      if (isCredits) {
+      if (isRateLimit || isCredits) {
         throw new Error(lastError);
       }
 
       if (attempt < maxAttempts) {
-        const waitMs = isRateLimit ? 1400 * attempt : 600;
-        await new Promise((resolve) => setTimeout(resolve, waitMs));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
 
@@ -147,6 +140,15 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
   }, [itemColor, itemName]);
 
   const generateImage = useCallback(async () => {
+    const cacheKey = `${itemColor.toLowerCase()}::${itemName.toLowerCase()}`;
+    const cachedUrl = itemImageCache.get(cacheKey);
+    if (cachedUrl) {
+      setImageUrl(cachedUrl);
+      setFailed(false);
+      setLoading(false);
+      return;
+    }
+
     const requestId = ++requestIdRef.current;
     setLoading(true);
     setFailed(false);
@@ -154,11 +156,14 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
     try {
       const nextImageUrl = await enqueueImageRequest(() => invokeItemImage());
       if (requestIdRef.current !== requestId) return;
+      itemImageCache.set(cacheKey, nextImageUrl);
       setImageUrl(nextImageUrl);
     } catch (error) {
       if (requestIdRef.current !== requestId) return;
+      const fallbackImage = createFallbackItemImage(itemName, itemColor);
+      itemImageCache.set(cacheKey, fallbackImage);
       setFailed(true);
-      setImageUrl("/placeholder.svg");
+      setImageUrl(fallbackImage);
       const message = error instanceof Error ? error.message : "Failed to generate item image";
       if (/credits exhausted|payment required/i.test(message)) {
         toast.error(message);
@@ -168,7 +173,7 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
         setLoading(false);
       }
     }
-  }, [invokeItemImage]);
+  }, [invokeItemImage, itemColor, itemName]);
 
   useEffect(() => {
     setImageUrl(null);
