@@ -443,13 +443,9 @@ const FullOutfitImage = ({
 
 const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsDisplayProps) => {
   const [outfitVariant, setOutfitVariant] = useState({ bottom: 0, footwear: 0, accessories: 0 });
-  const [styledLookRefreshKey, setStyledLookRefreshKey] = useState(0);
-  const lastRefreshAtRef = useRef(0);
 
   useEffect(() => {
     setOutfitVariant({ bottom: 0, footwear: 0, accessories: 0 });
-    setStyledLookRefreshKey(0);
-    lastRefreshAtRef.current = 0;
   }, [result]);
 
   const pickSuggestion = (
@@ -483,28 +479,6 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
   useEffect(() => {
     onOutfitDescription(fullOutfitDesc);
   }, [fullOutfitDesc, onOutfitDescription]);
-
-  const cycleOutfitVariant = () => {
-    const now = Date.now();
-    if (now - lastRefreshAtRef.current < 3500) {
-      toast.error("Please wait 3-4 seconds before refreshing again.");
-      return;
-    }
-    lastRefreshAtRef.current = now;
-
-    const bottomLen = result.suggestions.bottomWear?.length ?? 0;
-    const footwearLen = result.suggestions.footwear?.length ?? 0;
-    const accessoryLen = result.suggestions.accessories?.length ?? 0;
-
-    // Rotate all categories simultaneously to ensure visible change
-    setOutfitVariant((prev) => ({
-      bottom: bottomLen > 1 ? (prev.bottom + 1) % bottomLen : prev.bottom,
-      footwear: footwearLen > 1 ? (prev.footwear + 1) % footwearLen : prev.footwear,
-      accessories: accessoryLen > 1 ? (prev.accessories + 1) % accessoryLen : prev.accessories,
-    }));
-
-    setStyledLookRefreshKey((prev) => prev + 1);
-  };
 
   return (
     <section className="relative py-32 px-6">
