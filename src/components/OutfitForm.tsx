@@ -1,47 +1,57 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { Plus, X, Sparkles } from "lucide-react";
+import { Upload, Sparkles, Image as ImageIcon, X } from "lucide-react";
 
 interface OutfitFormProps {
-  onAnalyze: (items: string[]) => void;
+  onAnalyze: (imageBase64: string, description: string) => void;
   isLoading: boolean;
 }
 
-const EXAMPLE_ITEMS = [
-  "Navy blue slim-fit blazer with gold buttons",
-  "White cotton crew-neck t-shirt",
-  "Black skinny jeans with slight distressing",
-  "Brown leather chelsea boots",
-  "Burgundy silk pocket square",
+const EXAMPLE_PROMPTS = [
+  "Suggest me matching bottom wear and accessories for office",
+  "What shoes and accessories go with this for a college look?",
+  "Style this for a date night with matching bottoms",
+  "Suggest casual outfit pieces to go with this",
 ];
 
 const OutfitForm = ({ onAnalyze, isLoading }: OutfitFormProps) => {
-  const [items, setItems] = useState<string[]>([""]);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [description, setDescription] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const addItem = () => {
-    if (items.length < 6) setItems([...items, ""]);
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image must be under 5MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setImagePreview(result);
+      setImageBase64(result);
+    };
+    reader.readAsDataURL(file);
   };
 
-  const removeItem = (index: number) => {
-    if (items.length > 1) setItems(items.filter((_, i) => i !== index));
-  };
-
-  const updateItem = (index: number, value: string) => {
-    const updated = [...items];
-    updated[index] = value;
-    setItems(updated);
-  };
-
-  const loadExample = () => {
-    setItems([...EXAMPLE_ITEMS]);
+  const removeImage = () => {
+    setImagePreview(null);
+    setImageBase64(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSubmit = () => {
-    const filled = items.filter((item) => item.trim());
-    if (filled.length >= 2) onAnalyze(filled);
+    if (!imageBase64) return;
+    onAnalyze(imageBase64, description || "Suggest me matching bottom wear and accessories");
   };
 
-  const filledCount = items.filter((i) => i.trim()).length;
+  const usePrompt = (prompt: string) => {
+    setDescription(prompt);
+  };
 
   return (
     <section id="analyzer" className="py-24 px-6">
@@ -53,69 +63,92 @@ const OutfitForm = ({ onAnalyze, isLoading }: OutfitFormProps) => {
           transition={{ duration: 0.6 }}
         >
           <h2 className="font-display text-4xl md:text-5xl font-bold text-center mb-3">
-            <span className="text-gradient-gold">Describe</span> Your Outfit
+            <span className="text-gradient-gold">Upload</span> Your Clothing
           </h2>
-          <p className="text-muted-foreground text-center mb-8 font-body">
-            Enter at least 2 clothing items with detailed descriptions for best results.
+          <p className="text-muted-foreground text-center mb-10 font-body">
+            Upload a clothing image and tell us what you need — we'll analyze colors and suggest matching pieces.
           </p>
 
-          <div className="flex justify-center mb-8">
-            <button
-              onClick={loadExample}
-              className="text-xs tracking-wider uppercase text-primary font-body hover:text-gold-light transition-colors border-b border-primary/30 pb-0.5"
-            >
-              Load example outfit
-            </button>
+          {/* Image Upload Area */}
+          <div className="mb-8">
+            {!imagePreview ? (
+              <label
+                className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gold/30 rounded-sm bg-card/50 cursor-pointer hover:border-primary/50 transition-colors group"
+              >
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-14 h-14 rounded-full border border-gold/30 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                    <Upload size={24} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-body text-foreground">Click to upload clothing image</p>
+                    <p className="text-xs font-body text-muted-foreground mt-1">JPG, PNG up to 5MB</p>
+                  </div>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
+            ) : (
+              <div className="relative">
+                <img
+                  src={imagePreview}
+                  alt="Uploaded clothing"
+                  className="w-full max-h-80 object-contain rounded-sm border border-gold/20 bg-card"
+                />
+                <button
+                  onClick={removeImage}
+                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-card/90 border border-gold/20 flex items-center justify-center hover:bg-destructive/20 transition-colors"
+                >
+                  <X size={16} className="text-foreground" />
+                </button>
+                <div className="absolute bottom-2 left-2 flex items-center gap-1.5 px-3 py-1 bg-card/90 rounded-full border border-gold/20">
+                  <ImageIcon size={12} className="text-primary" />
+                  <span className="text-xs font-body text-foreground">Image uploaded</span>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="space-y-3">
-            {items.map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="flex gap-2 items-center"
+          {/* Description Input */}
+          <div className="mb-4">
+            <label className="block text-xs tracking-wider uppercase text-muted-foreground font-body mb-2">
+              What do you need?
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="e.g., Suggest me matching bottom wear and accessories for office"
+              rows={3}
+              className="w-full bg-card border border-gold/20 rounded-sm px-4 py-3 text-foreground font-body text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary transition-colors resize-none"
+            />
+          </div>
+
+          {/* Quick prompts */}
+          <div className="flex flex-wrap gap-2 mb-8">
+            {EXAMPLE_PROMPTS.map((prompt) => (
+              <button
+                key={prompt}
+                onClick={() => usePrompt(prompt)}
+                className="px-3 py-1.5 border border-gold/20 rounded-full text-xs text-muted-foreground font-body hover:border-primary/40 hover:text-foreground transition-colors"
               >
-                <span className="text-xs text-muted-foreground font-body w-6 text-right shrink-0">
-                  {index + 1}.
-                </span>
-                <input
-                  value={item}
-                  onChange={(e) => updateItem(index, e.target.value)}
-                  placeholder="e.g., Light grey wool overcoat"
-                  className="flex-1 bg-card border border-gold/20 rounded-sm px-4 py-3 text-foreground font-body text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary transition-colors"
-                />
-                {items.length > 1 && (
-                  <button
-                    onClick={() => removeItem(index)}
-                    className="text-muted-foreground hover:text-destructive transition-colors p-1"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-              </motion.div>
+                {prompt}
+              </button>
             ))}
           </div>
 
-          {items.length < 6 && (
-            <button
-              onClick={addItem}
-              className="mt-3 flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-body text-sm ml-8"
-            >
-              <Plus size={14} />
-              Add item
-            </button>
-          )}
-
-          <div className="mt-8 flex justify-center">
+          {/* Submit */}
+          <div className="flex justify-center">
             <button
               onClick={handleSubmit}
-              disabled={filledCount < 2 || isLoading}
+              disabled={!imageBase64 || isLoading}
               className="px-10 py-4 bg-primary text-primary-foreground font-body font-medium tracking-wider uppercase text-sm rounded-sm hover:bg-gold-light transition-colors duration-300 glow-gold disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-3"
             >
               <Sparkles size={16} />
-              {isLoading ? "Analyzing..." : "Analyze Compatibility"}
+              {isLoading ? "Analyzing with AI..." : "Analyze & Get Suggestions"}
             </button>
           </div>
         </motion.div>
