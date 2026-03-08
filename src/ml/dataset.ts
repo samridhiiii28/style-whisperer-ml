@@ -263,6 +263,8 @@ export const SUGGESTION_RULES: SuggestionRule[] = [
       { item: "Casual Watch", colors: ["Silver", "Black"], reason: "A simple watch adds subtle style to a casual outfit" },
       { item: "Sunglasses", colors: ["Black", "Tortoise"], reason: "Essential casual accessory that completes the look" },
       { item: "Canvas Belt", colors: ["Brown", "Black"], reason: "Practical and stylish belt for jeans pairing" },
+      { item: "Stud Earrings", colors: ["Silver", "Gold"], reason: "Minimal studs add a clean finishing touch" },
+      { item: "Beaded Bracelet", colors: ["Black", "Brown", "Mixed"], reason: "Casual bracelet for a laid-back vibe" },
     ],
   },
   {
