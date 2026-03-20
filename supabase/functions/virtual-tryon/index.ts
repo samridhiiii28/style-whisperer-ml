@@ -20,72 +20,67 @@ serve(async (req) => {
     }
 
     const hasGarmentReference = Boolean(garmentImageBase64);
-    const facePreservation = `CRITICAL: You MUST preserve the EXACT same face, facial features, facial structure, eyes, nose, mouth, eyebrows, skin tone, skin texture, hair color, hair style, and body shape from the person's photo. The face must be an IDENTICAL match — do NOT generate a new face, do NOT alter any facial features, do NOT change the person's identity. The ONLY thing that should change is the clothing.`;
+    const facePreservation = `CRITICAL: You MUST output an IMAGE, not text. Preserve the EXACT same face, facial features, skin tone, hair color, hair style, and body shape from the person's photo. Do NOT generate a new face. The ONLY thing that should change is the clothing.`;
     
     const instructions = hasGarmentReference
-      ? `Virtual try-on:\n- Image 1 is the person photo (REFERENCE for exact appearance/identity)\n- Image 2 is the clothing reference\n\n${facePreservation}\n\nGenerate a realistic full-body image of THIS EXACT PERSON from image 1 wearing the garment from image 2 (preserve color, shape, neckline, fit), styled with: ${outfitDescription}. The person's face and identity must be pixel-perfect identical to image 1. Professional fashion photo, full body, clean background.`
-      : `Virtual try-on:\n\n${facePreservation}\n\nGenerate a realistic full-body image of THIS EXACT SAME PERSON wearing: ${outfitDescription}. The face, facial features, skin tone, hair, and body type must remain EXACTLY identical to the input photo — only change the clothing. Professional fashion photograph, full body, good lighting, clean background.`;
+      ? `Generate an image. Virtual try-on:\n- Image 1 = person (preserve identity exactly)\n- Image 2 = clothing reference\n\n${facePreservation}\n\nCreate a realistic full-body fashion photo of this exact person wearing the garment from image 2, styled with: ${outfitDescription}. Clean background.`
+      : `Generate an image. Virtual try-on:\n\n${facePreservation}\n\nCreate a realistic full-body fashion photo of this exact person wearing: ${outfitDescription}. Clean background.`;
 
     const content: Array<{ type: string; text?: string; image_url?: { url: string } }> = [
-      {
-        type: "text",
-        text: instructions,
-      },
-      {
-        type: "image_url",
-        image_url: { url: userImageBase64 },
-      },
+      { type: "text", text: instructions },
+      { type: "image_url", image_url: { url: userImageBase64 } },
     ];
 
     if (garmentImageBase64) {
-      content.push({
-        type: "image_url",
-        image_url: { url: garmentImageBase64 },
-      });
+      content.push({ type: "image_url", image_url: { url: garmentImageBase64 } });
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
-        messages: [
-          {
-            role: "user",
-            content,
-          }
-        ],
-        modalities: ["image", "text"],
-      }),
-    });
+    const models = ["google/gemini-3.1-flash-image-preview", "google/gemini-2.5-flash-image"];
+    let imageUrl: string | undefined;
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again shortly." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await response.text();
-      console.error("Virtual try-on error:", response.status, t);
-      return new Response(JSON.stringify({ error: "Virtual try-on failed" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    for (const model of models) {
+      console.log(`Trying model: ${model}`);
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: "user", content }],
+          modalities: ["image", "text"],
+        }),
       });
-    }
 
-    const data = await response.json();
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again shortly." }), {
+            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (response.status === 402) {
+          return new Response(JSON.stringify({ error: "AI credits exhausted." }), {
+            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const t = await response.text();
+        console.error(`Error with ${model}:`, response.status, t);
+        continue;
+      }
+
+      const data = await response.json();
+      imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+      if (imageUrl) {
+        console.log(`Image generated successfully with ${model}`);
+        break;
+      }
+      console.warn(`${model} returned no image:`, JSON.stringify(data).slice(0, 400));
+    }
 
     if (!imageUrl) {
-      console.error("No image in try-on response:", JSON.stringify(data).slice(0, 500));
-      return new Response(JSON.stringify({ error: "Virtual try-on image not generated" }), {
+      return new Response(JSON.stringify({ error: "Virtual try-on image not generated. Please try again." }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
