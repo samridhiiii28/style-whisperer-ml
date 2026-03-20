@@ -14,11 +14,17 @@ import { CLOTHING_DATASET } from "./dataset";
 /**
  * Identify the clothing item from user's text description.
  */
+/** Match keyword as a whole word to avoid "hat" matching inside "that" */
+function matchesWholeWord(text: string, keyword: string): boolean {
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(?:^|\\s|[^a-z])${escaped}(?:$|\\s|[^a-z])`, "i").test(text);
+}
+
 function identifyItem(description: string, primaryColor: string): string {
   const lower = description.toLowerCase();
   const sorted = [...CLOTHING_DATASET].sort((a, b) => b.keyword.length - a.keyword.length);
   for (const entry of sorted) {
-    if (lower.includes(entry.keyword)) {
+    if (matchesWholeWord(lower, entry.keyword)) {
       const name = entry.keyword.charAt(0).toUpperCase() + entry.keyword.slice(1);
       return `${primaryColor} ${name}`;
     }
@@ -28,7 +34,7 @@ function identifyItem(description: string, primaryColor: string): string {
     "bodysuit", "corset", "kimono", "poncho", "cape", "overalls", "dungarees",
   ];
   for (const kw of extraKeywords) {
-    if (lower.includes(kw)) {
+    if (matchesWholeWord(lower, kw)) {
       return `${primaryColor} ${kw.charAt(0).toUpperCase() + kw.slice(1)}`;
     }
   }
