@@ -4,6 +4,7 @@ import { Upload, User, Sparkles, X, Loader2, Droplets, RefreshCw, ChevronLeft, C
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { analyzeSkinTone, recommendLipShades, type LipAnalysisResult } from "@/ml/lipShadeAnalyzer";
+import { getDemoTryonImage } from "@/assets/demo";
 
 interface VirtualTryOnProps {
   outfitDescription: string;
