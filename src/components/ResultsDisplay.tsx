@@ -4,6 +4,7 @@ import { Palette, Calendar, Shirt, Footprints, Watch, Lightbulb, Check, Loader2,
 import MLInsightsPanel from "./MLInsightsPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getDemoItemImage, getDemoFullOutfitImage } from "@/assets/demo";
 
 let imageRequestQueue = Promise.resolve();
 let lastImageRequestAt = 0;
@@ -160,14 +161,14 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
       setImageUrl(nextImageUrl);
     } catch (error) {
       if (requestIdRef.current !== requestId) return;
-      const fallbackImage = createFallbackItemImage(itemName, itemColor);
-      itemImageCache.set(cacheKey, fallbackImage);
-      setFailed(true);
-      setImageUrl(fallbackImage);
       const message = error instanceof Error ? error.message : "Failed to generate item image";
-      if (/credits exhausted|payment required/i.test(message)) {
-        toast.error(message);
-      }
+      const isCreditsIssue = /credits exhausted|payment required/i.test(message);
+      const fallbackImage = isCreditsIssue
+        ? getDemoItemImage(itemName)
+        : createFallbackItemImage(itemName, itemColor);
+      itemImageCache.set(cacheKey, fallbackImage);
+      setFailed(!isCreditsIssue);
+      setImageUrl(fallbackImage);
     } finally {
       if (requestIdRef.current === requestId) {
         setLoading(false);
@@ -373,8 +374,14 @@ const FullOutfitImage = ({
       setImageUrl(nextImageUrl);
     } catch (error) {
       if (requestId !== requestIdRef.current) return;
-      setFailed(true);
-      toast.error(error instanceof Error ? error.message : "Failed to generate outfit image");
+      const message = error instanceof Error ? error.message : "Failed to generate outfit image";
+      if (/credits exhausted|payment required/i.test(message)) {
+        setImageUrl(getDemoFullOutfitImage());
+        setFailed(false);
+      } else {
+        setFailed(true);
+        toast.error(message);
+      }
     } finally {
       if (requestId === requestIdRef.current) {
         setLoading(false);
