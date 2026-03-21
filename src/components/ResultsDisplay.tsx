@@ -2,33 +2,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Palette, Calendar, Shirt, Footprints, Watch, Lightbulb, Check, Loader2, ImageIcon } from "lucide-react";
 import MLInsightsPanel from "./MLInsightsPanel";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getDemoItemImage, getDemoFullOutfitImage } from "@/assets/demo";
+import { geminiImageGeneration, geminiBatchImageGeneration } from "@/lib/gemini";
 
-let imageRequestQueue = Promise.resolve();
-let lastImageRequestAt = 0;
-const IMAGE_REQUEST_GAP_MS = 2600;
 const itemImageCache = new Map<string, string>();
-
-const enqueueImageRequest = <T,>(task: () => Promise<T>): Promise<T> => {
-  const run = async () => {
-    const elapsed = Date.now() - lastImageRequestAt;
-    if (elapsed < IMAGE_REQUEST_GAP_MS) {
-      await new Promise((resolve) => setTimeout(resolve, IMAGE_REQUEST_GAP_MS - elapsed));
-    }
-
-    try {
-      return await task();
-    } finally {
-      lastImageRequestAt = Date.now();
-    }
-  };
-
-  const queuedTask = imageRequestQueue.then(run, run);
-  imageRequestQueue = queuedTask.then(() => undefined, () => undefined);
-  return queuedTask;
-};
 
 const createFallbackItemImage = (itemName: string, itemColor: string) => {
   const label = `${itemColor} ${itemName}`.trim();
@@ -104,63 +82,32 @@ const ScoreRing = ({ score, label }: { score: number; label: string }) => {
   );
 };
 
-const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: string }) => {
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+const ItemImageCard = ({ itemName, itemColor, preloadedUrl }: { itemName: string; itemColor: string; preloadedUrl?: string }) => {
+  const [imageUrl, setImageUrl] = useState<string | null>(preloadedUrl ?? null);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
-  const requestIdRef = useRef(0);
 
-  const invokeItemImage = useCallback(async (maxAttempts = 1): Promise<string> => {
-    const prompt = `${itemColor} ${itemName}`.trim();
-    let lastError = "Failed to generate item image";
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
-        body: { prompt, type: "item" },
-      });
-
-      if (!error && !data?.error && data?.imageUrl) {
-        return data.imageUrl;
-      }
-
-      const status = getFunctionErrorStatus(error);
-      lastError = data?.error || error?.message || lastError;
-      const isRateLimit = status === 429 || /429|rate limit/i.test(lastError);
-      const isCredits = status === 402 || /402|credits exhausted|payment required/i.test(lastError);
-
-      if (isRateLimit || isCredits) {
-        throw new Error(lastError);
-      }
-
-      if (attempt < maxAttempts) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
+  useEffect(() => {
+    if (preloadedUrl) {
+      setImageUrl(preloadedUrl);
+      setLoading(false);
+      setFailed(false);
     }
-
-    throw new Error(lastError);
-  }, [itemColor, itemName]);
+  }, [preloadedUrl]);
 
   const generateImage = useCallback(async () => {
     const cacheKey = `${itemColor.toLowerCase()}::${itemName.toLowerCase()}`;
     const cachedUrl = itemImageCache.get(cacheKey);
-    if (cachedUrl) {
-      setImageUrl(cachedUrl);
-      setFailed(false);
-      setLoading(false);
-      return;
-    }
+    if (cachedUrl) { setImageUrl(cachedUrl); return; }
 
-    const requestId = ++requestIdRef.current;
     setLoading(true);
     setFailed(false);
-
     try {
-      const nextImageUrl = await enqueueImageRequest(() => invokeItemImage());
-      if (requestIdRef.current !== requestId) return;
-      itemImageCache.set(cacheKey, nextImageUrl);
-      setImageUrl(nextImageUrl);
+      const prompt = `Generate a clean product photograph of this fashion item: ${itemColor} ${itemName}. Single item on clean white background, professional product photography, high detail, fashion e-commerce style.`;
+      const url = await geminiImageGeneration(prompt);
+      itemImageCache.set(cacheKey, url);
+      setImageUrl(url);
     } catch (error) {
-      if (requestIdRef.current !== requestId) return;
       const message = error instanceof Error ? error.message : "Failed to generate item image";
       const isCreditsIssue = /credits exhausted|payment required/i.test(message);
       const fallbackImage = isCreditsIssue
@@ -170,16 +117,9 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
       setFailed(!isCreditsIssue);
       setImageUrl(fallbackImage);
     } finally {
-      if (requestIdRef.current === requestId) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
-  }, [invokeItemImage, itemColor, itemName]);
-
-  useEffect(() => {
-    setImageUrl(null);
-    void generateImage();
-  }, [generateImage]);
+  }, [itemColor, itemName]);
 
   return (
     <div className="w-full h-48 rounded-lg border border-gold/10 bg-secondary/30 flex items-center justify-center overflow-hidden">
@@ -209,12 +149,14 @@ const SuggestionCard = ({
   items,
   selectedIndex,
   onSelectedIndexChange,
+  preloadedImages,
 }: {
   icon: React.ElementType;
   title: string;
   items: { item: string; color: string; reason: string }[];
   selectedIndex?: number;
   onSelectedIndexChange?: (index: number) => void;
+  preloadedImages?: Map<string, string>;
 }) => {
   const [internalSelectedIndex, setInternalSelectedIndex] = useState(0);
   const currentIndex = typeof selectedIndex === "number" ? selectedIndex : internalSelectedIndex;
@@ -265,7 +207,7 @@ const SuggestionCard = ({
       </div>
 
       <div className="p-4 bg-secondary/30 rounded-lg">
-        <ItemImageCard key={`${selected.item}-${selected.color}`} itemName={selected.item} itemColor={selected.color} />
+        <ItemImageCard key={`${selected.item}-${selected.color}`} itemName={selected.item} itemColor={selected.color} preloadedUrl={preloadedImages?.get(`${selected.color.toLowerCase()}::${selected.item.toLowerCase()}`)} />
         <div className="mt-4 flex items-start gap-3">
           <div className="w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center mt-0.5 shrink-0">
             <Check size={12} className="text-primary" />
@@ -280,12 +222,6 @@ const SuggestionCard = ({
       </div>
     </motion.div>
   );
-};
-
-const getFunctionErrorStatus = (error: unknown): number | undefined => {
-  if (!error || typeof error !== "object") return undefined;
-  const maybeError = error as { context?: { status?: number } };
-  return typeof maybeError.context?.status === "number" ? maybeError.context.status : undefined;
 };
 
 const COLOR_WORDS = new Set([
@@ -326,41 +262,12 @@ const FullOutfitImage = ({
   const [failed, setFailed] = useState(false);
   const requestIdRef = useRef(0);
 
-  const invokeOutfitImage = async (maxAttempts = 2): Promise<string> => {
-    let lastError = "Failed to generate outfit image";
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const { data, error } = await supabase.functions.invoke("generate-outfit-image", {
-        body: {
-          prompt: outfitDescription,
-          type: "full_outfit",
-          sourceImageBase64: sourceGarmentImage,
-          sourceGarmentColorName,
-          sourceGarmentColorHex,
-        },
-      });
-
-      if (!error && !data?.error && data?.imageUrl) {
-        return data.imageUrl;
-      }
-
-      const status = getFunctionErrorStatus(error);
-      lastError = data?.error || error?.message || lastError;
-
-      const isRateLimit = status === 429 || /429|rate limit/i.test(lastError);
-      const isCredits = status === 402 || /402|credits exhausted|payment required/i.test(lastError);
-
-      // Stop immediately on gateway limits to avoid repeated 429 bursts
-      if (isRateLimit || isCredits) {
-        throw new Error(lastError);
-      }
-
-      if (attempt < maxAttempts) {
-        await new Promise((resolve) => setTimeout(resolve, 2200));
-      }
-    }
-
-    throw new Error(lastError);
+  const invokeOutfitImage = async (): Promise<string> => {
+    const colorLock = sourceGarmentColorName
+      ? `The top/main garment must be the EXACT same item from the provided reference image — same color (${sourceGarmentColorName}${sourceGarmentColorHex ? `, ${sourceGarmentColorHex}` : ""}), same pattern, same fabric, same style. Do NOT change or substitute the garment.`
+      : "The main garment must be the EXACT same item from the provided reference image — same color, pattern, fabric, and style.";
+    const prompt = `I am providing a reference image of a clothing item. Generate a high-quality fashion photograph of a model wearing THIS EXACT garment from the reference image as part of a complete outfit: ${outfitDescription}. ${colorLock} Full body shot, professional studio lighting, clean white background, fashion editorial style, high resolution.`;
+    return geminiImageGeneration(prompt, sourceGarmentImage);
   };
 
   const generateFullOutfit = async () => {
@@ -369,7 +276,7 @@ const FullOutfitImage = ({
     setFailed(false);
 
     try {
-      const nextImageUrl = await enqueueImageRequest(() => invokeOutfitImage());
+      const nextImageUrl = await invokeOutfitImage();
       if (requestId !== requestIdRef.current) return;
       setImageUrl(nextImageUrl);
     } catch (error) {
@@ -450,9 +357,40 @@ const FullOutfitImage = ({
 
 const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsDisplayProps) => {
   const [outfitVariant, setOutfitVariant] = useState({ bottom: 0, footwear: 0, accessories: 0 });
+  const [preloadedImages, setPreloadedImages] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     setOutfitVariant({ bottom: 0, footwear: 0, accessories: 0 });
+
+    // Batch-generate all item images in parallel
+    const allItems: { key: string; prompt: string }[] = [];
+    const addItems = (items: { item: string; color: string }[] | undefined) => {
+      if (!items) return;
+      for (const { item, color } of items) {
+        const key = `${color.toLowerCase()}::${item.toLowerCase()}`;
+        if (!itemImageCache.has(key)) {
+          allItems.push({
+            key,
+            prompt: `Generate a clean product photograph of this fashion item: ${color} ${item}. Single item on clean white background, professional product photography, high detail, fashion e-commerce style.`,
+          });
+        }
+      }
+    };
+
+    addItems(result.suggestions.bottomWear);
+    addItems(result.suggestions.footwear);
+    addItems(result.suggestions.accessories);
+
+    if (allItems.length > 0) {
+      geminiBatchImageGeneration(allItems).then((results) => {
+        for (const [key, url] of results) {
+          itemImageCache.set(key, url);
+        }
+        setPreloadedImages(new Map(itemImageCache));
+      }).catch((err) => {
+        console.error("Batch image preload failed:", err);
+      });
+    }
   }, [result]);
 
   const pickSuggestion = (
@@ -609,6 +547,7 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
                 items={result.suggestions.bottomWear}
                 selectedIndex={outfitVariant.bottom}
                 onSelectedIndexChange={(index) => setOutfitVariant((prev) => ({ ...prev, bottom: index }))}
+                preloadedImages={preloadedImages}
               />
             )}
             {result.suggestions.footwear?.length > 0 && (
@@ -618,6 +557,7 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
                 items={result.suggestions.footwear}
                 selectedIndex={outfitVariant.footwear}
                 onSelectedIndexChange={(index) => setOutfitVariant((prev) => ({ ...prev, footwear: index }))}
+                preloadedImages={preloadedImages}
               />
             )}
             {result.suggestions.accessories?.length > 0 && (
@@ -627,6 +567,7 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
                 items={result.suggestions.accessories}
                 selectedIndex={outfitVariant.accessories}
                 onSelectedIndexChange={(index) => setOutfitVariant((prev) => ({ ...prev, accessories: index }))}
+                preloadedImages={preloadedImages}
               />
             )}
           </div>

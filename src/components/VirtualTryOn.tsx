@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Upload, User, Sparkles, X, Loader2, Droplets, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { analyzeSkinTone, recommendLipShades, type LipAnalysisResult } from "@/ml/lipShadeAnalyzer";
 import { getDemoTryonImage } from "@/assets/demo";
+import { geminiImageGeneration } from "@/lib/gemini";
+
+const CONCURRENCY_EXHAUSTED_RE = /credits exhausted|payment required|quota|resource exhausted/i;
 
 interface VirtualTryOnProps {
   outfitDescription: string;
@@ -70,39 +72,30 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("virtual-tryon", {
-        body: {
-          userImageBase64: userImage,
-          outfitDescription,
-          garmentImageBase64: referenceGarmentImage,
-        },
-      });
+      const facePreservation = `CRITICAL: Preserve the EXACT same face, facial features, skin tone, hair color, hair style, and body shape from the FIRST image (the person's photo). Do NOT generate a new face or change the person's appearance. The ONLY thing that should change is the clothing.`;
+      const prompt = referenceGarmentImage
+        ? `Virtual try-on task. I am providing TWO images:\n- Image 1: The person's photo — preserve this person's EXACT appearance.\n- Image 2: The clothing/garment reference — the person must wear THIS EXACT garment (same color, pattern, style, fabric).\n\n${facePreservation}\n\nDress the person from Image 1 in the EXACT garment from Image 2, styled as a complete outfit with: ${outfitDescription}. Full-body shot, realistic fashion photo, clean background.`
+        : `Virtual try-on task. The image provided is the person's photo.\n\n${facePreservation}\n\nCreate a realistic full-body fashion photo of this exact person wearing: ${outfitDescription}. Clean background.`;
 
-      if (error || data?.error) {
-        const msg = data?.error || error?.message || "Virtual try-on failed. Please try again.";
-        if (/credits exhausted|payment required/i.test(msg)) {
-          // Demo mode: use sample try-on image
-          setTryOnResults((prev) => {
-            const next = [...prev, getDemoTryonImage()];
-            setCurrentResultIndex(next.length - 1);
-            return next.length > maxResults ? next.slice(-maxResults) : next;
-          });
-          setIsLoading(false);
-          return;
-        }
-        toast.error(msg);
-        setIsLoading(false);
-        return;
-      }
+      const imageUrl = await geminiImageGeneration(prompt, userImage, referenceGarmentImage);
 
       setTryOnResults((prev) => {
-        const next = [...prev, data.imageUrl];
+        const next = [...prev, imageUrl];
         setCurrentResultIndex(next.length - 1);
         return next.length > maxResults ? next.slice(-maxResults) : next;
       });
     } catch (err) {
       console.error("Try-on error:", err);
-      toast.error("Something went wrong. Please try again.");
+      const msg = err instanceof Error ? err.message : "Something went wrong.";
+      if (CONCURRENCY_EXHAUSTED_RE.test(msg)) {
+        setTryOnResults((prev) => {
+          const next = [...prev, getDemoTryonImage()];
+          setCurrentResultIndex(next.length - 1);
+          return next.length > maxResults ? next.slice(-maxResults) : next;
+        });
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setIsLoading(false);
     }
