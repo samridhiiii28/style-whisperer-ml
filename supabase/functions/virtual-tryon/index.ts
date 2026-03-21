@@ -35,7 +35,7 @@ serve(async (req) => {
       content.push({ type: "image_url", image_url: { url: garmentImageBase64 } });
     }
 
-    const models = ["google/gemini-3.1-flash-image-preview", "google/gemini-2.5-flash-image"];
+    const models = ["google/gemini-3-pro-image-preview", "google/gemini-3.1-flash-image-preview"];
     let imageUrl: string | undefined;
 
     for (const model of models) {
