@@ -374,8 +374,14 @@ const FullOutfitImage = ({
       setImageUrl(nextImageUrl);
     } catch (error) {
       if (requestId !== requestIdRef.current) return;
-      setFailed(true);
-      toast.error(error instanceof Error ? error.message : "Failed to generate outfit image");
+      const message = error instanceof Error ? error.message : "Failed to generate outfit image";
+      if (/credits exhausted|payment required/i.test(message)) {
+        setImageUrl(getDemoFullOutfitImage());
+        setFailed(false);
+      } else {
+        setFailed(true);
+        toast.error(message);
+      }
     } finally {
       if (requestId === requestIdRef.current) {
         setLoading(false);

@@ -79,7 +79,18 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
       });
 
       if (error || data?.error) {
-        toast.error(data?.error || "Virtual try-on failed. Please try again.");
+        const msg = data?.error || error?.message || "Virtual try-on failed. Please try again.";
+        if (/credits exhausted|payment required/i.test(msg)) {
+          // Demo mode: use sample try-on image
+          setTryOnResults((prev) => {
+            const next = [...prev, getDemoTryonImage()];
+            setCurrentResultIndex(next.length - 1);
+            return next.length > maxResults ? next.slice(-maxResults) : next;
+          });
+          setIsLoading(false);
+          return;
+        }
+        toast.error(msg);
         setIsLoading(false);
         return;
       }
