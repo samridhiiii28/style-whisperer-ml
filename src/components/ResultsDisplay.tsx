@@ -161,14 +161,14 @@ const ItemImageCard = ({ itemName, itemColor }: { itemName: string; itemColor: s
       setImageUrl(nextImageUrl);
     } catch (error) {
       if (requestIdRef.current !== requestId) return;
-      const fallbackImage = createFallbackItemImage(itemName, itemColor);
-      itemImageCache.set(cacheKey, fallbackImage);
-      setFailed(true);
-      setImageUrl(fallbackImage);
       const message = error instanceof Error ? error.message : "Failed to generate item image";
-      if (/credits exhausted|payment required/i.test(message)) {
-        toast.error(message);
-      }
+      const isCreditsIssue = /credits exhausted|payment required/i.test(message);
+      const fallbackImage = isCreditsIssue
+        ? getDemoItemImage(itemName)
+        : createFallbackItemImage(itemName, itemColor);
+      itemImageCache.set(cacheKey, fallbackImage);
+      setFailed(!isCreditsIssue);
+      setImageUrl(fallbackImage);
     } finally {
       if (requestIdRef.current === requestId) {
         setLoading(false);
