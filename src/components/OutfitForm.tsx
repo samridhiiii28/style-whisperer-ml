@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { Upload, Sparkles, Image as ImageIcon, X, Camera, FlaskConical } from "lucide-react";
-import testShirt from "@/assets/demo/test-shirt.jpg";
+import { Upload, Sparkles, Image as ImageIcon, X, Camera } from "lucide-react";
 
 interface OutfitFormProps {
   onAnalyze: (imageBase64: string, description: string) => void;
