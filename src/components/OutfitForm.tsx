@@ -47,19 +47,6 @@ const OutfitForm = ({ onAnalyze, isLoading }: OutfitFormProps) => {
     onAnalyze(imageBase64, description || "Suggest me matching bottom wear and accessories");
   };
 
-  const testDemoMode = async () => {
-    const response = await fetch(testShirt);
-    const blob = await response.blob();
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      setImagePreview(result);
-      setImageBase64(result);
-      onAnalyze(result, "Suggest matching bottom wear and accessories for office");
-    };
-    reader.readAsDataURL(blob);
-  };
-
   const usePrompt = (prompt: string) => {
     setDescription(prompt);
   };
