@@ -7,7 +7,7 @@ import { getDemoTryonImage } from "@/assets/demo";
 import { geminiImageGeneration } from "@/lib/gemini";
 import testShirt from "@/assets/demo/test-shirt.jpg";
 
-const CONCURRENCY_EXHAUSTED_RE = /credits exhausted|payment required|quota|resource exhausted/i;
+
 
 interface VirtualTryOnProps {
   outfitDescription: string;
