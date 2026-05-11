@@ -132,28 +132,6 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
             <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-body mb-3 ml-1">
               Your Photo
             </p>
-            <button
-              onClick={async () => {
-                const response = await fetch(testShirt);
-                const blob = await response.blob();
-                const reader = new FileReader();
-                reader.onload = () => {
-                  const result = reader.result as string;
-                  setUserImage(result);
-                  setTryOnResults([]);
-                  setCurrentResultIndex(0);
-                  setLipAnalysis(null);
-                  setSelectedShadeIndex(0);
-                  analyzeLipShades(result);
-                };
-                reader.readAsDataURL(blob);
-              }}
-              disabled={isLoading}
-              className="mb-3 flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gold/15 text-muted-foreground hover:text-primary hover:border-gold/30 transition-all duration-300 text-xs font-body disabled:opacity-40"
-            >
-              <FlaskConical size={12} />
-              Test Demo Try-On
-            </button>
             {!userImage ? (
                 <label className="flex flex-col items-center justify-center w-full h-80 border-2 border-dashed border-gold/12 rounded-xl bg-card/30 cursor-pointer hover:border-primary/25 hover:bg-card/50 transition-all duration-500 group">
                   <div className="flex flex-col items-center gap-4">
