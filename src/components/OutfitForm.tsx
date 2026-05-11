@@ -147,7 +147,7 @@ const OutfitForm = ({ onAnalyze, isLoading }: OutfitFormProps) => {
           </div>
 
           {/* Submit */}
-          <div className="flex justify-center flex-col items-center gap-4">
+          <div className="flex justify-center">
             <motion.button
               onClick={handleSubmit}
               disabled={!imageBase64 || isLoading}
@@ -158,15 +158,6 @@ const OutfitForm = ({ onAnalyze, isLoading }: OutfitFormProps) => {
               <Sparkles size={16} />
               {isLoading ? "Analyzing..." : "Analyze & Get Suggestions"}
             </motion.button>
-
-            <button
-              onClick={testDemoMode}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-gold/15 text-muted-foreground hover:text-primary hover:border-gold/30 transition-all duration-300 text-xs font-body disabled:opacity-40"
-            >
-              <FlaskConical size={14} />
-              Test Demo Mode
-            </button>
           </div>
         </motion.div>
       </div>
