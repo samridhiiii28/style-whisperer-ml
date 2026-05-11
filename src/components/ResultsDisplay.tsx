@@ -109,12 +109,9 @@ const ItemImageCard = ({ itemName, itemColor, preloadedUrl }: { itemName: string
       setImageUrl(url);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to generate item image";
-      const isCreditsIssue = /credits exhausted|payment required/i.test(message);
-      const fallbackImage = isCreditsIssue
-        ? getDemoItemImage(itemName)
-        : createFallbackItemImage(itemName, itemColor);
+      console.warn("Item image generation failed, using demo fallback:", message);
+      const fallbackImage = getDemoItemImage(itemName);
       itemImageCache.set(cacheKey, fallbackImage);
-      setFailed(!isCreditsIssue);
       setImageUrl(fallbackImage);
     } finally {
       setLoading(false);
@@ -282,13 +279,9 @@ const FullOutfitImage = ({
     } catch (error) {
       if (requestId !== requestIdRef.current) return;
       const message = error instanceof Error ? error.message : "Failed to generate outfit image";
-      if (/credits exhausted|payment required/i.test(message)) {
-        setImageUrl(getDemoFullOutfitImage());
-        setFailed(false);
-      } else {
-        setFailed(true);
-        toast.error(message);
-      }
+      console.warn("Styled look generation failed, using demo fallback:", message);
+      setImageUrl(getDemoFullOutfitImage());
+      setFailed(false);
     } finally {
       if (requestId === requestIdRef.current) {
         setLoading(false);
@@ -388,7 +381,13 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
         }
         setPreloadedImages(new Map(itemImageCache));
       }).catch((err) => {
-        console.error("Batch image preload failed:", err);
+        console.warn("Batch image preload failed, using demo fallbacks:", err);
+        // Cache demo fallbacks for all requested items so cards show images immediately
+        for (const { key } of allItems) {
+          const itemName = key.split("::")[1] || "";
+          itemImageCache.set(key, getDemoItemImage(itemName));
+        }
+        setPreloadedImages(new Map(itemImageCache));
       });
     }
   }, [result]);

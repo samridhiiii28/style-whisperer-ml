@@ -6,7 +6,7 @@ import { analyzeSkinTone, recommendLipShades, type LipAnalysisResult } from "@/m
 import { getDemoTryonImage } from "@/assets/demo";
 import { geminiImageGeneration } from "@/lib/gemini";
 
-const CONCURRENCY_EXHAUSTED_RE = /credits exhausted|payment required|quota|resource exhausted/i;
+
 
 interface VirtualTryOnProps {
   outfitDescription: string;
@@ -87,15 +87,12 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
     } catch (err) {
       console.error("Try-on error:", err);
       const msg = err instanceof Error ? err.message : "Something went wrong.";
-      if (CONCURRENCY_EXHAUSTED_RE.test(msg)) {
-        setTryOnResults((prev) => {
-          const next = [...prev, getDemoTryonImage()];
-          setCurrentResultIndex(next.length - 1);
-          return next.length > maxResults ? next.slice(-maxResults) : next;
-        });
-      } else {
-        toast.error(msg);
-      }
+      console.warn("Try-on generation failed, using demo fallback:", msg);
+      setTryOnResults((prev) => {
+        const next = [...prev, getDemoTryonImage()];
+        setCurrentResultIndex(next.length - 1);
+        return next.length > maxResults ? next.slice(-maxResults) : next;
+      });
     } finally {
       setIsLoading(false);
     }
@@ -130,12 +127,12 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* User photo upload */}
-            <div>
-              <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-body mb-3 ml-1">
-                Your Photo
-              </p>
-              {!userImage ? (
+          {/* User photo upload */}
+          <div>
+            <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-body mb-3 ml-1">
+              Your Photo
+            </p>
+            {!userImage ? (
                 <label className="flex flex-col items-center justify-center w-full h-80 border-2 border-dashed border-gold/12 rounded-xl bg-card/30 cursor-pointer hover:border-primary/25 hover:bg-card/50 transition-all duration-500 group">
                   <div className="flex flex-col items-center gap-4">
                     <motion.div

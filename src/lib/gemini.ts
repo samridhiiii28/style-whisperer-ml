@@ -1,6 +1,9 @@
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
 const BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 
+// Demo mode: always fallback when API key is missing or any error occurs
+export const isGeminiAvailable = (): boolean => !!GEMINI_API_KEY && GEMINI_API_KEY !== "undefined" && GEMINI_API_KEY.length > 10;
+
 interface GeminiTextResponse {
   candidates?: { content?: { parts?: { text?: string }[] } }[];
 }
@@ -17,6 +20,10 @@ export async function geminiTextCompletion(
   systemPrompt: string,
   userPrompt: string,
 ): Promise<string> {
+  if (!isGeminiAvailable()) {
+    throw new Error("Gemini API key not configured — demo mode active");
+  }
+
   const url = `${BASE_URL}/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
   const res = await fetch(url, {
@@ -42,6 +49,10 @@ export async function geminiImageGeneration(
   prompt: string,
   ...referenceImages: (string | undefined)[]
 ): Promise<string> {
+  if (!isGeminiAvailable()) {
+    throw new Error("Gemini API key not configured — demo mode active");
+  }
+
   const url = `${BASE_URL}/models/gemini-3.1-flash-image-preview:generateContent?key=${GEMINI_API_KEY}`;
 
   const parts: { text?: string; inlineData?: { mimeType: string; data: string } }[] = [
