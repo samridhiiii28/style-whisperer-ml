@@ -381,7 +381,13 @@ const ResultsDisplay = ({ result, uploadedImage, onOutfitDescription }: ResultsD
         }
         setPreloadedImages(new Map(itemImageCache));
       }).catch((err) => {
-        console.error("Batch image preload failed:", err);
+        console.warn("Batch image preload failed, using demo fallbacks:", err);
+        // Cache demo fallbacks for all requested items so cards show images immediately
+        for (const { key } of allItems) {
+          const itemName = key.split("::")[1] || "";
+          itemImageCache.set(key, getDemoItemImage(itemName));
+        }
+        setPreloadedImages(new Map(itemImageCache));
       });
     }
   }, [result]);
