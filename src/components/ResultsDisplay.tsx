@@ -279,13 +279,9 @@ const FullOutfitImage = ({
     } catch (error) {
       if (requestId !== requestIdRef.current) return;
       const message = error instanceof Error ? error.message : "Failed to generate outfit image";
-      if (/credits exhausted|payment required/i.test(message)) {
-        setImageUrl(getDemoFullOutfitImage());
-        setFailed(false);
-      } else {
-        setFailed(true);
-        toast.error(message);
-      }
+      console.warn("Styled look generation failed, using demo fallback:", message);
+      setImageUrl(getDemoFullOutfitImage());
+      setFailed(false);
     } finally {
       if (requestId === requestIdRef.current) {
         setLoading(false);
