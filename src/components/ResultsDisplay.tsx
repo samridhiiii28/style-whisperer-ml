@@ -109,12 +109,9 @@ const ItemImageCard = ({ itemName, itemColor, preloadedUrl }: { itemName: string
       setImageUrl(url);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to generate item image";
-      const isCreditsIssue = /credits exhausted|payment required/i.test(message);
-      const fallbackImage = isCreditsIssue
-        ? getDemoItemImage(itemName)
-        : createFallbackItemImage(itemName, itemColor);
+      console.warn("Item image generation failed, using demo fallback:", message);
+      const fallbackImage = getDemoItemImage(itemName);
       itemImageCache.set(cacheKey, fallbackImage);
-      setFailed(!isCreditsIssue);
       setImageUrl(fallbackImage);
     } finally {
       setLoading(false);
