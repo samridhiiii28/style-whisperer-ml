@@ -45,6 +45,10 @@ export async function geminiImageGeneration(
   prompt: string,
   ...referenceImages: (string | undefined)[]
 ): Promise<string> {
+  if (!isGeminiAvailable()) {
+    throw new Error("Gemini API key not configured — demo mode active");
+  }
+
   const url = `${BASE_URL}/models/gemini-3.1-flash-image-preview:generateContent?key=${GEMINI_API_KEY}`;
 
   const parts: { text?: string; inlineData?: { mimeType: string; data: string } }[] = [
