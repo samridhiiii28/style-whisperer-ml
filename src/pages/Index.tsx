@@ -157,21 +157,25 @@ const Index = () => {
         </div>
       )}
 
-      <div ref={resultsRef}>
-        {result && (
-          <ResultsDisplay
-            result={result}
-            uploadedImage={uploadedImage}
-            onOutfitDescription={handleOutfitDescription}
-          />
-        )}
-      </div>
+      {user && (
+        <>
+          <div ref={resultsRef}>
+            {result && (
+              <ResultsDisplay
+                result={result}
+                uploadedImage={uploadedImage}
+                onOutfitDescription={handleOutfitDescription}
+              />
+            )}
+          </div>
 
-      {result && outfitDescription && (
-        <VirtualTryOn
-          outfitDescription={outfitDescription}
-          referenceGarmentImage={uploadedImage}
-        />
+          {result && outfitDescription && (
+            <VirtualTryOn
+              outfitDescription={outfitDescription}
+              referenceGarmentImage={uploadedImage}
+            />
+          )}
+        </>
       )}
 
       {/* Footer */}
