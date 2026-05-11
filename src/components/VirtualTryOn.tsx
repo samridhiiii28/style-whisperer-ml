@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Upload, User, Sparkles, X, Loader2, Droplets, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Upload, User, Sparkles, X, Loader2, Droplets, RefreshCw, ChevronLeft, ChevronRight, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
 import { analyzeSkinTone, recommendLipShades, type LipAnalysisResult } from "@/ml/lipShadeAnalyzer";
 import { getDemoTryonImage } from "@/assets/demo";
 import { geminiImageGeneration } from "@/lib/gemini";
+import testShirt from "@/assets/demo/test-shirt.jpg";
 
 const CONCURRENCY_EXHAUSTED_RE = /credits exhausted|payment required|quota|resource exhausted/i;
 
