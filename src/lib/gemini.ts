@@ -20,6 +20,10 @@ export async function geminiTextCompletion(
   systemPrompt: string,
   userPrompt: string,
 ): Promise<string> {
+  if (!isGeminiAvailable()) {
+    throw new Error("Gemini API key not configured — demo mode active");
+  }
+
   const url = `${BASE_URL}/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
   const res = await fetch(url, {
