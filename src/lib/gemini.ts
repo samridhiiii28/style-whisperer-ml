@@ -1,6 +1,9 @@
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
 const BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 
+// Demo mode: always fallback when API key is missing or any error occurs
+export const isGeminiAvailable = (): boolean => !!GEMINI_API_KEY && GEMINI_API_KEY !== "undefined" && GEMINI_API_KEY.length > 10;
+
 interface GeminiTextResponse {
   candidates?: { content?: { parts?: { text?: string }[] } }[];
 }
