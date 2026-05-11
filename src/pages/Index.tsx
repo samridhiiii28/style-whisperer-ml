@@ -24,6 +24,10 @@ const Index = () => {
   const { user, profile, signOut, loading: authLoading } = useAuth();
 
   const scrollToForm = () => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
     formRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
