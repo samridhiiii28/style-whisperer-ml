@@ -88,15 +88,12 @@ const VirtualTryOn = ({ outfitDescription, referenceGarmentImage }: VirtualTryOn
     } catch (err) {
       console.error("Try-on error:", err);
       const msg = err instanceof Error ? err.message : "Something went wrong.";
-      if (CONCURRENCY_EXHAUSTED_RE.test(msg)) {
-        setTryOnResults((prev) => {
-          const next = [...prev, getDemoTryonImage()];
-          setCurrentResultIndex(next.length - 1);
-          return next.length > maxResults ? next.slice(-maxResults) : next;
-        });
-      } else {
-        toast.error(msg);
-      }
+      console.warn("Try-on generation failed, using demo fallback:", msg);
+      setTryOnResults((prev) => {
+        const next = [...prev, getDemoTryonImage()];
+        setCurrentResultIndex(next.length - 1);
+        return next.length > maxResults ? next.slice(-maxResults) : next;
+      });
     } finally {
       setIsLoading(false);
     }
